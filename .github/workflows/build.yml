@@ -11,7 +11,7 @@ jobs:
         with:
           node-version: 18
       - name: Install dependencies
-        run: sed -i 's/gradle-8.2.1-all/gradle-8.5-all/g' android/gradle/wrapper/gradle-wrapper.properties
+        run: |
           npm install @capacitor/core@5.7.0 @capacitor/cli@5.7.0 @capacitor/android@5.7.0
           echo '{"appId":"com.mandy.projects","appName":"MandysProjects","webDir":"www"}' > capacitor.config.json
           mkdir www
@@ -23,7 +23,7 @@ jobs:
           java-version: 21
           distribution: temurin
       - name: Fix Gradle version
-        /gradle-8.5-all/g' android/gradle/wrapper/gradle-wrapper.properties
+        run: sed -i 's|gradle-.*-all|gradle-8.5-all|g' android/gradle/wrapper/gradle-wrapper.properties
       - name: Clean Gradle cache
         run: rm -rf ~/.gradle/caches
       - name: Build APK
