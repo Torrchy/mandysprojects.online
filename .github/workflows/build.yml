@@ -13,6 +13,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
+          echo '{"appId":"com.mandy.projects","appName":"MandysProjects","webDir":"www"}' > capacitor.config.json
           npx cap add android
           npx cap sync android
       - uses: actions/setup-java@v4
