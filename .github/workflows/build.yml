@@ -13,6 +13,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap add android
           npx cap sync android
       - uses: actions/setup-java@v4
         with:
