@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Journal Insight Engine — Mandy's Projects</title>
+  <style>
+    /* ── Design Tokens (matching mc-style.css) ── */
+    :root {
+      --bg-primary: #07070f;
+      --bg-secondary: #0f0f1c;
+      --bg-card: #131320;
+      --bg-card-hover: #181830;
+      --border: #1e1e35;
+      --border-glow: rgba(139, 92, 246, 0.25);
+      --text-primary: #e8e8f0;
+      --text-secondary: #7070a0;
+      --text-muted: #404060;
+      --accent-purple: #8b5cf6;
+      --accent-purple-dim: rgba(139, 92, 246, 0.15);
+      --accent-green: #22c55e;
+      --accent-green-dim: rgba(34, 197, 94, 0.12);
+      --accent-red: #ef4444;
+      --accent-red-dim: rgba(239, 68, 68, 0.12);
+      --accent-amber: #f59e0b;
+      --accent-pink: #ec4899;
+      --accent-blue: #3b82f6;
+      --accent-teal: #14b8a6;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Inter, -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(rgba(139, 92, 246, 0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(7, 7, 15, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+    .nav-links a.active { color: var(--accent-purple); }
+
+    /* ── LAYOUT ── */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 5rem;
+    }
+
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.25rem;
+    }
+    .page-header .subtitle { color: var(--text-secondary); font-size: 0.9rem; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border-glow); }
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    /* ── STAT ROW ── */
+    .stat-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .stat-box {
+      flex: 1;
+      min-width: 100px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--accent-purple); }
+    .stat-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ── MOOD GRID ── */
+    .mood-grid { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1rem; }
+    .mood-btn {
+      padding: 0.35rem 0.8rem;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .mood-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+    .mood-btn.selected {
+      background: var(--accent-purple-dim);
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+
+    /* ── TEXTAREA ── */
+    .journal-textarea {
+      width: 100%;
+      min-height: 160px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      resize: vertical;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .journal-textarea:focus { border-color: var(--accent-purple); }
+    .journal-textarea::placeholder { color: var(--text-muted); }
+
+    .entry-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .word-count { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 0.6rem 1.4rem;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      color: white;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .btn-ghost:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+
+    /* ── GRID ── */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .grid-3 { grid-template-columns: 1fr; } }
+
+    /* ── CHIPS ── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin: 0.15rem;
+    }
+    .chip-purple { background: rgba(139,92,246,0.15); color: #a78bfa; }
+    .chip-pink   { background: rgba(236,72,153,0.15);  color: #f472b6; }
+    .chip-amber  { background: rgba(245,158,11,0.15);  color: #fbbf24; }
+    .chip-red    { background: rgba(239,68,68,0.15);   color: #f87171; }
+    .chip-green  { background: rgba(34,197,94,0.15);   color: #4ade80; }
+    .chip-blue   { background: rgba(59,130,246,0.15);  color: #60a5fa; }
+    .chip-teal   { background: rgba(20,184,166,0.15);  color: #2dd4bf; }
+    .chip-muted  { background: rgba(64,64,96,0.3);     color: var(--text-muted); }
+
+    /* ── PROGRESS BAR ── */
+    .progress-bar {
+      height: 6px;
+      border-radius: 100px;
+      background: var(--border);
+      overflow: hidden;
+      margin: 0.25rem 0 0.8rem;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink));
+      transition: width 0.6s ease;
+    }
+
+    /* ── TECHNIQUE CARDS ── */
+    .technique-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.6rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .technique-card:hover { border-color: rgba(139,92,246,0.4); }
+    .technique-card.highlighted { border-color: rgba(139,92,246,0.35); background: rgba(139,92,246,0.04); }
+    .technique-header { display: flex; align-items: center; justify-content: space-between; }
+    .technique-title { font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+    .technique-body { display: none; margin-top: 0.8rem; color: var(--text-secondary); font-size: 0.84rem; line-height: 1.7; }
+    .technique-body.open { display: block; }
+    .technique-steps { list-style: none; margin-top: 0.5rem; }
+    .technique-steps li { padding: 0.25rem 0 0.25rem 1.2rem; position: relative; color: var(--text-secondary); font-size: 0.83rem; }
+    .technique-steps li::before { content: '→'; position: absolute; left: 0; color: var(--accent-purple); }
+    .chevron { transition: transform 0.2s; color: var(--text-muted); font-size: 0.75rem; flex-shrink: 0; }
+    .chevron.open { transform: rotate(180deg); }
+
+    /* ── RESOURCE GRID ── */
+    .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.7rem; }
+    .resource-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: block;
+    }
+    .resource-item:hover { border-color: var(--border-glow); transform: translateY(-2px); }
+    .resource-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+    .resource-name { font-weight: 600; font-size: 0.82rem; color: var(--text-primary); margin-bottom: 0.2rem; }
+    .resource-desc { font-size: 0.73rem; color: var(--text-secondary); line-height: 1.45; }
+    .resource-tag { font-size: 0.63rem; color: var(--accent-purple); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.3rem; }
+
+    /* ── ENTRY HISTORY ── */
+    .entry-item { border-bottom: 1px solid var(--border); padding: 1rem 0; }
+    .entry-item:last-child { border-bottom: none; }
+    .entry-meta { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.45rem; flex-wrap: wrap; }
+    .entry-date { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
+    .entry-text { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.65; white-space: pre-wrap; }
+    .entry-clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .entry-actions { display: flex; gap: 0.4rem; margin-top: 0.45rem; }
+    .btn-tiny {
+      padding: 0.18rem 0.55rem;
+      font-size: 0.68rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-tiny:hover { border-color: var(--accent-red); color: var(--accent-red); }
+    .btn-tiny.expand:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); }
+    .empty-state .icon { font-size: 2rem; margin-bottom: 0.6rem; }
+    .empty-state p { font-size: 0.85rem; line-height: 1.6; }
+
+    /* ── BANNER ── */
+    .banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.85rem 1.1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      line-height: 1.55;
+    }
+    .banner-purple {
+      background: var(--accent-purple-dim);
+      border: 1px solid rgba(139,92,246,0.2);
+      color: #c4b5fd;
+    }
+    .banner-amber {
+      background: rgba(245,158,11,0.09);
+      border: 1px solid rgba(245,158,11,0.2);
+      color: #fcd34d;
+    }
+    .banner-pink {
+      background: rgba(236,72,153,0.09);
+      border: 1px solid rgba(236,72,153,0.2);
+      color: #f9a8d4;
+    }
+
+    /* ── TAB BAR ── */
+    .tab-bar { display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: -1px;
+      letter-spacing: 0.03em;
+    }
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active { color: var(--accent-purple); border-bottom-color: var(--accent-purple); }
+
+    /* ── THOUGHT RECORD ── */
+    .tr-field { margin-bottom: 0.75rem; }
+    .tr-field label {
+      display: block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+      font-weight: 700;
+    }
+    .tr-field textarea, .tr-field input {
+      width: 100%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+    }
+    .tr-field textarea:focus, .tr-field input:focus { border-color: var(--accent-purple); }
+    .tr-field textarea::placeholder, .tr-field input::placeholder { color: var(--text-muted); }
+
+    /* ── MINI CHART ── */
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 55px;
+      margin: 0.5rem 0;
+    }
+    .mini-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      min-height: 4px;
+      cursor: pointer;
+      position: relative;
+      transition: opacity 0.2s;
+    }
+    .mini-bar:hover { opacity: 1 !important; }
+    .mini-bar::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.45rem;
+      font-size: 0.63rem;
+      white-space: nowrap;
+      color: var(--text-primary);
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .mini-bar:hover::after { opacity: 1; }
+
+    /* ── SEARCH ── */
+    .search-input {
+      width: 100%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 1rem;
+    }
+    .search-input:focus { border-color: var(--accent-purple); }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    /* ── CONFIRM OVERLAY ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .confirm-overlay.open { display: flex; }
+    .confirm-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+    }
+    .confirm-box p { color: var(--text-secondary); font-size: 0.88rem; margin: 0.75rem 0 1.5rem; line-height: 1.5; }
+    .confirm-actions { display: flex; gap: 0.75rem; justify-content: center; }
+
+    /* ── BREATH TIMER ── */
+    #boxBreathTimer { margin-top: 0.75rem; text-align: center; }
+    #breathPhase { font-size: 1.8rem; font-weight: 800; color: var(--accent-purple); }
+    #breathCount { font-size: 2.5rem; font-weight: 800; color: var(--text-primary); margin: 0.15rem 0; }
+    .breath-track { width: 100%; height: 7px; background: var(--border); border-radius: 100px; overflow: hidden; margin-top: 0.4rem; }
+    #breathBar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); border-radius: 100px; transition: width 1s linear; }
+
+    /* ── INSIGHT BOX ── */
+    .insight-box {
+      background: var(--accent-purple-dim);
+      border: 1px solid rgba(139,92,246,0.18);
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: #c4b5fd;
+    }
+
+    /* ── PROMPT CARD ── */
+    .prompt-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .prompt-card:hover { border-color: rgba(139,92,246,0.4); }
+    .prompt-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
+    .prompt-card .hint { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      nav { padding: 0.85rem 1rem; }
+      .nav-links { gap: 1rem; }
+      main { padding: 1.25rem 1rem 3rem; }
+      .page-header h1 { font-size: 1.5rem; }
+      .stat-num { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">← MP∙</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="mission-control.html">Mission Control</a></li>
+    <li><a href="journal.html" class="active">Journal</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>🧠 Journal Insight Engine</h1>
+    <p class="subtitle">Pattern recognition across your thoughts. Finding the threads you didn't know were there.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stat-row" id="statsRow">
+    <div class="stat-box"><div class="stat-num" id="statEntries">0</div><div class="stat-label">Entries</div></div>
+    <div class="stat-box"><div class="stat-num" id="statStreak">0</div><div class="stat-label">Day Streak 🔥</div></div>
+    <div class="stat-box"><div class="stat-num" id="statMood">—</div><div class="stat-label">Top Mood</div></div>
+    <div class="stat-box"><div class="stat-num" id="statWords">0</div><div class="stat-label">Words Written</div></div>
+  </div>
+
+  <!-- ENTRY CARD -->
+  <div class="card">
+    <div class="card-title">✍️ Today's Entry</div>
+    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);font-weight:700;margin-bottom:0.6rem">How are you feeling right now? Pick all that apply</div>
+    <div class="mood-grid" id="moodGrid"></div>
+    <textarea class="journal-textarea" id="entryText"
+      placeholder="What's on your mind? No filter needed. This is just for you. ✨"></textarea>
+    <div class="entry-footer">
+      <span class="word-count" id="wordCount">0 words</span>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="clearEntry()">Clear</button>
+        <button class="btn btn-primary" id="saveBtn" onclick="saveEntry()">💾 Save Entry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYSIS GRID -->
+  <div class="grid-3">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">🔍 Pattern Radar</div>
+      <div id="patternContent">
+        <div class="empty-state"><div class="icon">🌱</div><p>Write a few entries and I'll start spotting what keeps coming up for you.</p></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">🧩 Cognitive Lens</div>
+      <div id="cognitiveContent">
+        <div class="empty-state"><div class="icon">🔭</div><p>Your thinking patterns — like catastrophising or all-or-nothing thinking — will show up here.</p></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">📈 Mood Over Time</div>
+      <div id="moodContent">
+        <div class="empty-state"><div class="icon">📊</div><p>Tag your moods as you write to see trends emerge.</p></div>
+      </div>
+    </div>
+  </div>
+  <div style="height:1.5rem"></div>
+
+  <!-- THERAPY TOOLKIT -->
+  <div class="card">
+    <div class="card-title">💡 Therapy Toolkit</div>
+    <div id="therapyBanner" class="banner banner-purple" style="display:none">
+      <span>🤖</span><span id="therapyBannerText"></span>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('techniques',this)">Techniques</button>
+      <button class="tab-btn" onclick="switchTab('cbt',this)">CBT Record</button>
+      <button class="tab-btn" onclick="switchTab('grounding',this)">Grounding</button>
+      <button class="tab-btn" onclick="switchTab('prompts',this)">Prompts</button>
+    </div>
+
+    <!-- TECHNIQUES TAB -->
+    <div id="tab-techniques">
+      <div id="techniquesList"></div>
+    </div>
+
+    <!-- CBT RECORD TAB -->
+    <div id="tab-cbt" style="display:none">
+      <div class="banner banner-purple" style="margin-bottom:1rem">
+        <span>📝</span>
+        <span>A thought record helps you catch, examine, and gently reframe unhelpful thinking. Fill in as much or as little as feels useful — you don't have to do every section.</span>
+      </div>
+      <div id="cbtFields">
+        <div class="tr-field"><label>Situation — What happened? Where were you? Who was there?</label><textarea rows="2" placeholder="e.g. I sent an email and got a delayed reply..."></textarea></div>
+        <div class="tr-field"><label>Automatic Thought — What went through your mind?</label><textarea rows="2" placeholder="e.g. They must think I'm useless. I always mess things up..."></textarea></div>
+        <div class="tr-field"><label>Emotion — What did you feel? Rate intensity (0–100%)</label><textarea rows="1" placeholder="e.g. Anxious 80%, Shame 60%..."></textarea></div>
+        <div class="tr-field"><label>Evidence FOR the thought</label><textarea rows="2" placeholder="e.g. The reply was late. They seemed distracted last time..."></textarea></div>
+        <div class="tr-field"><label>Evidence AGAINST the thought</label><textarea rows="2" placeholder="e.g. They always reply late. It's been a busy week for everyone..."></textarea></div>
+        <div class="tr-field"><label>Alternative / Balanced Thought</label><textarea rows="2" placeholder="e.g. There are many reasons for a delayed reply. One email doesn't define my work..."></textarea></div>
+        <div class="tr-field"><label>How do you feel now? Re-rate the emotion</label><textarea rows="1" placeholder="e.g. Anxious 35%, more grounded..."></textarea></div>
+      </div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="saveCBTRecord()">💾 Save to Journal</button>
+        <button class="btn btn-ghost" onclick="clearCBT()">Clear</button>
+      </div>
+    </div>
+
+    <!-- GROUNDING TAB -->
+    <div id="tab-grounding" style="display:none">
+      <div class="banner banner-amber" style="margin-bottom:1rem">
+        <span>⚡</span>
+        <span>Use these when you feel overwhelmed, anxious, or disconnected. They work best when you actually <em>do</em> them rather than just reading them.</span>
+      </div>
+
+      <div class="technique-card" onclick="toggleTechnique(this)">
+        <div class="technique-header">
+          <div class="technique-title">🫁 Box Breathing (4-4-4-4)</div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="technique-body">
+          <p>Activates your parasympathetic nervous system to slow your heart rate. Works in minutes and you can do it anywhere.</p>
+          <ul class="technique-steps">
+            <li>Breathe IN for 4 counts (feel your belly expand, not just your chest)</li>
+            <li>HOLD for 4 counts</li>
+            <li>Breathe OUT slowly for 4 counts</li>
+            <li>HOLD for 4 counts</li>
+            <li>Repeat 4–6 times. Notice your heart rate slow.</li>
+          </ul>
+          <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="startBreath(event)">▶ Start guided timer</button>
+          <div id="boxBreathTimer" style="display:none">
+            <div id="breathPhase">IN</div>
+            <div id="breathCount">4</div>
+            <div class="breath-track"><div id="breathBar"></div></div>
+            <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="stopBreath(event)">⏹ Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="technique-card" onclick="toggleTechnique(this)">
+        <div class="technique-header">
+          <div class="technique-title">👁️ 5-4-3-2-1 Grounding</div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="technique-body">
+          <p>Brings you back to the present moment by engaging all five senses. Excellent for dissociation, spiralling thoughts, or panic.</p>
+          <ul class="technique-steps">
+            <li>Name <strong>5 things</strong> you can SEE right now</li>
+            <li>Name <strong>4 things</strong> you can TOUCH or feel</li>
+            <li>Name <strong>3 things</strong> you can HEAR</li>
+            <li>Name <strong>2 things</strong> you can SMELL (or two you love)</li>
+            <li>Name <strong>1 thing</strong> you can TASTE</li>
+          </ul>
+          <p style="margin-top:0.5rem">Say them out loud if you can. It helps more than you'd think.</p>
+        </div>
+      </div>
+
+      <div class="technique-card" onclick="toggleTechnique(this)">
+        <div class="technique-header">
+          <div class="technique-title">🧊 Cold Water Reset</div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="technique-body">
+          <p>Based on the mammalian diving reflex — cold water on your face rapidly slows your heart rate. Surprisingly fast and effective for acute distress or a very bad moment.</p>
+          <ul class="technique-steps">
+            <li>Run cold water and splash your face 3–5 times</li>
+            <li>Or hold your wrists under cold running water for 30 seconds</li>
+            <li>Breathe slowly while you do it</li>
+            <li>Notice the physical shift — it's real</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="technique-card" onclick="toggleTechnique(this)">
+        <div class="technique-header">
+          <div class="technique-title">🦶 Body Scan</div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="technique-body">
+          <p>Pulls attention from anxious thoughts into physical sensation. Particularly useful for dissociation or when you're carrying tension you didn't notice.</p>
+          <ul class="technique-steps">
+            <li>Sit or lie comfortably. Close your eyes if that feels okay.</li>
+            <li>Start at the crown of your head — notice any tension or tingling</li>
+            <li>Slowly move down: forehead, jaw (is it clenched?), neck, shoulders</li>
+            <li>Continue to chest, stomach, arms, hands</li>
+            <li>Down to hips, thighs, calves, feet, toes</li>
+            <li>Wherever you notice tension: breathe into it, let it soften on the exhale</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="technique-card" onclick="toggleTechnique(this)">
+        <div class="technique-header">
+          <div class="technique-title">🏡 Safe Place Visualisation</div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="technique-body">
+          <p>Your brain responds to vividly imagined safety almost the same way it responds to real safety. Build this slowly so it feels real — it becomes a refuge you can return to anytime.</p>
+          <ul class="technique-steps">
+            <li>Close your eyes. Breathe slowly.</li>
+            <li>Imagine a place where you feel completely safe and calm — real or invented, no rules</li>
+            <li>Notice the colours, the light, the temperature</li>
+            <li>What can you hear? What does it smell like? What's underfoot?</li>
+            <li>Spend 2–5 minutes just being there. Let your body relax.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROMPTS TAB -->
+    <div id="tab-prompts" style="display:none">
+      <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:1rem;line-height:1.6">Sometimes the blank page is the hardest part. Click any prompt to start writing from it.</p>
+      <div id="promptsList"></div>
+      <button class="btn btn-ghost" style="margin-top:0.75rem;width:100%" onclick="renderPrompts()">🎲 New set of prompts</button>
+    </div>
+  </div>
+
+  <!-- RESOURCE LIBRARY -->
+  <div class="card">
+    <div class="card-title">📚 Resource Library</div>
+    <div class="tab-bar" id="resTabBar">
+      <button class="tab-btn active" onclick="switchResTab('apps',this)">Apps</button>
+      <button class="tab-btn" onclick="switchResTab('books',this)">Books</button>
+      <button class="tab-btn" onclick="switchResTab('practices',this)">Free Practices</button>
+      <button class="tab-btn" onclick="switchResTab('support',this)">Support Lines</button>
+    </div>
+    <div id="res-apps"><div class="resource-grid" id="resApps"></div></div>
+    <div id="res-books" style="display:none"><div class="resource-grid" id="resBooks"></div></div>
+    <div id="res-practices" style="display:none"><div class="resource-grid" id="resPractices"></div></div>
+    <div id="res-support" style="display:none"><div class="resource-grid" id="resSupport"></div></div>
+  </div>
+
+  <!-- IMPORT CARD -->
+  <div class="card">
+    <div class="card-title">📥 Import TypingMind Chats</div>
+    <div class="banner banner-purple" style="margin-bottom:1rem">
+      <span>🔒</span>
+      <span>Your entries are stored only in <strong>your browser</strong> — no one else who visits this site can see them. Import stays local, always.</span>
+    </div>
+    <p style="font-size:0.84rem;color:var(--text-secondary);line-height:1.6;margin-bottom:1rem">
+      Got TypingMind chat exports? Drop them in and I'll pull out your messages, convert them to journal entries, and run the pattern analysis on everything. Your data never leaves your browser.
+    </p>
+    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
+      <label class="btn btn-primary" style="cursor:pointer">
+        📂 Choose TypingMind JSON files
+        <input type="file" id="importFileInput" accept=".json" multiple style="display:none" onchange="importTypingMind(this)">
+      </label>
+      <button class="btn btn-ghost" onclick="clearAllEntries()">🗑️ Clear all entries</button>
+      <span id="importStatus" style="font-size:0.8rem;color:var(--text-muted)"></span>
+    </div>
+    <div id="importLog" style="display:none;margin-top:1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:1rem;font-size:0.78rem;color:var(--text-secondary);line-height:1.7;max-height:180px;overflow-y:auto"></div>
+  </div>
+
+  <!-- ENTRY HISTORY -->
+  <div class="card">
+    <div class="card-title">📋 Entry History</div>
+    <input class="search-input" type="search" id="entrySearch" placeholder="Search your entries..." oninput="renderHistory()">
+    <div id="historyContent">
+      <div class="empty-state"><div class="icon">📖</div><p>Your entries live here. Start writing — even a few sentences counts.</p></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div style="font-size:2rem">🗑️</div>
+    <p>Delete this entry? This can't be undone and I won't judge you, but I will note: your words have value.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Keep it</button>
+      <button class="btn" style="background:var(--accent-red);color:white" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA DEFINITIONS ─────────────────────────────────────────────────────────
+
+const MOODS = [
+  { id:'anxious',     label:'😰 Anxious',      color:'chip-amber' },
+  { id:'low',         label:'😔 Low',           color:'chip-blue'  },
+  { id:'angry',       label:'😤 Angry',         color:'chip-red'   },
+  { id:'overwhelmed', label:'🌊 Overwhelmed',   color:'chip-purple'},
+  { id:'okay',        label:'😐 Okay',          color:'chip-teal'  },
+  { id:'good',        label:'😊 Good',          color:'chip-green' },
+  { id:'energised',   label:'⚡ Energised',     color:'chip-amber' },
+  { id:'foggy',       label:'🌫️ Foggy',         color:'chip-blue'  },
+  { id:'irritable',   label:'😒 Irritable',     color:'chip-red'   },
+  { id:'dissociated', label:'👁️ Dissociated',   color:'chip-purple'},
+  { id:'hopeful',     label:'🌱 Hopeful',       color:'chip-green' },
+  { id:'lonely',      label:'🫥 Lonely',        color:'chip-blue'  },
+  { id:'hyperfocus',  label:'🎯 Hyperfocused',  color:'chip-amber' },
+  { id:'burnt_out',   label:'🔥 Burnt Out',     color:'chip-red'   },
+  { id:'content',     label:'🌸 Content',       color:'chip-pink'  },
+];
+
+const PATTERNS = {
+  anxiety: {
+    label:'Anxiety', icon:'😰', color:'chip-amber',
+    keywords:['worried','worry','anxious','anxiety','nervous','scared','fear','panic','dread','apprehensive','uneasy','tense','on edge','heart racing','what if','catastrophe','dreading'],
+    therapy:['breathing','grounding','cbt_worry','safe_place','exposure']
+  },
+  lowMood: {
+    label:'Low Mood', icon:'😔', color:'chip-blue',
+    keywords:['sad','sadness','hopeless','exhausted','worthless','empty','numb','low','flat','pointless','meaningless','can\'t be bothered','don\'t care','what\'s the point','depressed','crying','cried','tearful','grey'],
+    therapy:['behavioural_activation','self_compassion','values','movement','inner_critic']
+  },
+  overwhelm: {
+    label:'Overwhelm', icon:'🌊', color:'chip-purple',
+    keywords:['overwhelmed','too much','drowning','can\'t cope','juggling','spinning','overload','too many','swamped','buried','piling up','stuck','paralysed','don\'t know where to start'],
+    therapy:['prioritisation','breathing','body_scan','rest','adhd_tools']
+  },
+  selfCriticism: {
+    label:'Self-Criticism', icon:'💔', color:'chip-red',
+    keywords:['not good enough','failure','useless','stupid','hate myself','can\'t do anything right','mess','inadequate','pathetic','weak','my fault','blamed myself','terrible person','disappointing','not enough','too much','too sensitive'],
+    therapy:['self_compassion','inner_critic','cbt_record','values','assertiveness']
+  },
+  loneliness: {
+    label:'Loneliness', icon:'🫥', color:'chip-blue',
+    keywords:['lonely','isolated','alone','no one','disconnected','invisible','misunderstood','no friends','nobody','all alone','left out','excluded','rejected','don\'t belong'],
+    therapy:['connection','values','behavioural_activation','self_compassion']
+  },
+  adhd: {
+    label:'ADHD Moments', icon:'🎯', color:'chip-teal',
+    keywords:['hyperfocus','can\'t focus','distracted','forgot','lost track','spiralling','rabbit hole','doom scroll','can\'t stop','task switching','time blindness','procrastinating','procrastination','can\'t start','paralysed','executive'],
+    therapy:['adhd_tools','body_doubling','prioritisation','movement','rest']
+  },
+  anger: {
+    label:'Anger', icon:'😤', color:'chip-red',
+    keywords:['angry','anger','frustrated','frustration','rage','annoyed','furious','wound up','fuming','livid','snapped','lost it','can\'t stand','unfair','resentful','resentment','seething'],
+    therapy:['urge_surfing','breathing','movement','assertiveness']
+  },
+  peoplePleasing: {
+    label:'People-Pleasing', icon:'🎭', color:'chip-pink',
+    keywords:['said yes','couldn\'t say no','didn\'t want to disappoint','walked over','put myself last','no boundaries','feel guilty','let them down','please everyone','their feelings','make them happy','everyone else first'],
+    therapy:['assertiveness','boundaries','values','inner_critic','self_compassion']
+  },
+  dissociation: {
+    label:'Dissociation', icon:'👁️', color:'chip-purple',
+    keywords:['dissociated','zoning out','spaced out','not real','unreal','detached','floating','not in my body','outside myself','watching myself','foggy','brain fog','autopilot','lost time','déjà vu'],
+    therapy:['grounding','body_scan','safe_place','breathing','connection']
+  },
+  burnout: {
+    label:'Burnout', icon:'🔥', color:'chip-red',
+    keywords:['burnt out','burned out','exhausted','running on empty','can\'t anymore','done','too tired','no energy','drained','depleted','hit a wall'],
+    therapy:['rest','movement','values','boundaries','self_compassion']
+  }
+};
+
+const COGNITIVE_PATTERNS = {
+  catastrophising: {
+    label:'Catastrophising', icon:'💥', color:'chip-red',
+    desc:'Jumping to the worst possible outcome',
+    keywords:['worst','disaster','ruined','terrible','never recover','end of the world','everything is awful','doomed','catastrophe','it\'s over','can\'t come back','completely ruined'],
+    reframe:'Ask: "What\'s the most realistic outcome? What would I tell a friend in this situation?"'
+  },
+  allOrNothing: {
+    label:'All-or-Nothing', icon:'🎭', color:'chip-amber',
+    desc:'Seeing things in black and white — no grey',
+    keywords:['always','never','everyone','no one','nothing ever','everything','completely','totally','perfect','all the time','not once','every single time','nothing works'],
+    reframe:'Look for the grey area: "Is this really ALL bad, or are there some parts that are okay?"'
+  },
+  mindReading: {
+    label:'Mind Reading', icon:'🧠', color:'chip-blue',
+    desc:'Assuming you know what others think or feel',
+    keywords:['they think','they must think','people think','they probably','they don\'t like','they hate me','they\'re judging','she thinks','he thinks','they must'],
+    reframe:'Check the evidence. What do you actually know vs. what are you assuming? Could there be another explanation?'
+  },
+  shouldStatements: {
+    label:'Should Statements', icon:'📋', color:'chip-purple',
+    desc:'"Should" and "must" create shame and pressure',
+    keywords:['should be','should have','shouldn\'t','must be','have to be','ought to','supposed to','had to','need to have','have to'],
+    reframe:'Try replacing "should" with "it would be nice if" or "I\'d prefer". Notice how the pressure shifts.'
+  },
+  labelling: {
+    label:'Labelling', icon:'🏷️', color:'chip-red',
+    desc:'Defining yourself entirely by a single thing',
+    keywords:['i\'m a failure','i\'m stupid','i\'m useless','i\'m broken','i\'m a mess','i\'m worthless','i\'m pathetic','i\'m too much','i\'m not enough','i\'m a burden','i am bad'],
+    reframe:'You made a mistake — you\'re not a mistake. Would you say this to someone you love?'
+  },
+  personalisation: {
+    label:'Personalisation', icon:'🎯', color:'chip-pink',
+    desc:'Taking responsibility for things outside your control',
+    keywords:['my fault','i caused','because of me','i ruined','i made them','i let them','it\'s because of me','i should have stopped','i\'m to blame','if i hadn\'t'],
+    reframe:'List all the other factors involved. Are you really the only cause, or one of many?'
+  },
+  fortuneTelling: {
+    label:'Fortune Telling', icon:'🔮', color:'chip-purple',
+    desc:'Predicting negative outcomes as if they\'re facts',
+    keywords:['will never','going to fail','won\'t work','it\'ll go wrong','i know it will','guaranteed to','bound to fail','never going to','impossible for me','will always be'],
+    reframe:'The future is genuinely unknown. What\'s one piece of evidence that contradicts this prediction?'
+  }
+};
+
+const TECHNIQUES = {
+  breathing: {
+    icon:'🫁', title:'Box Breathing', tag:'Anxiety · Overwhelm',
+    desc:'A 4-4-4-4 cycle that activates your parasympathetic nervous system. One of the fastest ways to physically calm your body.',
+    steps:['Breathe in for 4 counts (belly, not chest)','Hold for 4 counts','Breathe out slowly for 4 counts','Hold for 4 counts','Repeat 4–6 cycles — notice your body soften']
+  },
+  grounding: {
+    icon:'🦶', title:'5-4-3-2-1 Grounding', tag:'Dissociation · Anxiety · Panic',
+    desc:'Brings you back into your body and the present moment by engaging all five senses.',
+    steps:['5 things you can SEE','4 things you can TOUCH or feel','3 things you can HEAR','2 things you can SMELL','1 thing you can TASTE']
+  },
+  self_compassion: {
+    icon:'🤝', title:'Self-Compassion Break', tag:'Self-Criticism · Low Mood · Shame',
+    desc:'Based on Kristin Neff\'s research. Treats yourself with the same kindness you\'d give a friend. Proven to reduce self-criticism and depression without lowering your standards.',
+    steps:['Notice: "This is a moment of suffering" — acknowledge it, don\'t push it away','Remind yourself: "Suffering is part of life. I am not alone in this."','Place a hand on your heart or cheek — physical warmth matters','Ask: "What do I need right now?" — and try to offer that','Try saying quietly: "May I be kind to myself in this moment"']
+  },
+  cbt_record: {
+    icon:'📝', title:'CBT Thought Record', tag:'Anxiety · Self-Criticism · Low Mood',
+    desc:'Identifies and challenges unhelpful thought patterns. Use the CBT Record tab above when you notice your mood dip.',
+    steps:['Identify the triggering situation','Write down the automatic thought','Rate the emotion (0–100%)','Look for evidence FOR and AGAINST the thought','Write a balanced alternative thought','Re-rate the emotion — it usually drops']
+  },
+  behavioural_activation: {
+    icon:'🚀', title:'Behavioural Activation', tag:'Low Mood · Loneliness',
+    desc:'Low mood → do less → feel lower → do even less. This breaks that cycle. You act first; the mood follows. Not the other way around.',
+    steps:['Write down 3 activities that usually bring even tiny pleasure or achievement','Choose the easiest one','Do it — even for 5 minutes is enough to start','Notice any change in mood, however small','Repeat. Build slowly. One small thing at a time.']
+  },
+  inner_critic: {
+    icon:'🪞', title:'Inner Critic Dialogue', tag:'Self-Criticism · People-Pleasing',
+    desc:'Your inner critic is trying to protect you — it just has genuinely terrible methods. This technique teaches you to respond to it rather than obey it.',
+    steps:['Write down exactly what your inner critic is saying — every word','Ask: "What is it afraid will happen if I don\'t listen?"','Thank it for trying to protect you (yes, sincerely)','Now write what you\'d say to that critic if it were talking to someone you love','Notice the difference in tone. That kinder voice is also yours.']
+  },
+  values: {
+    icon:'🧭', title:'Values Clarification', tag:'Low Mood · People-Pleasing · Loneliness',
+    desc:'Living out of alignment with your values creates a persistent background hollowness. This reconnects you with what actually matters to YOU — not what you think should matter.',
+    steps:['Ask: "When do I feel most like myself?"','Ask: "What would I regret NOT doing or being?"','Ask: "What matters to me — not to my parents, partner, or peers — but to me?"','Write down 3–5 core values','Look at last week — where did you honour them? Where didn\'t you? No judgment — just noticing.']
+  },
+  adhd_tools: {
+    icon:'🎯', title:'ADHD Task Unsticking', tag:'ADHD · Overwhelm',
+    desc:'When you\'re stuck, paralysed, or can\'t start — it\'s not laziness. It\'s executive dysfunction. These bridge the gap between intention and action.',
+    steps:['Brain dump EVERYTHING onto paper — get it out of your head','Circle the ONE thing that matters most today. Just one.','Break it into the smallest possible first action (not "write report" — "open document")','Set a 10-minute timer and do only that first action','Reward yourself immediately after — your ADHD brain needs that dopamine hit to learn']
+  },
+  movement: {
+    icon:'🏃', title:'Movement as Medicine', tag:'Low Mood · Anger · ADHD · Burnout',
+    desc:'Even 10 minutes changes your brain chemistry. Not toxic positivity — pure physiology. Particularly effective for ADHD (dopamine), anger (discharge), and low mood (serotonin).',
+    steps:['Put on one song you actually like','Move in any way — dance, walk, jump, shake it out, anything','Don\'t think about exercise, goals, or doing it "right"','Notice how you feel after even 5 minutes','Bonus points if you can go outside. Sunlight + movement is a cheat code.']
+  },
+  assertiveness: {
+    icon:'🗣️', title:'Assertive Communication', tag:'People-Pleasing · Anger · Boundaries',
+    desc:'Assertiveness is NOT aggression. It\'s asking for what you need from a place of self-respect rather than fear or built-up resentment.',
+    steps:['Use "I" statements: "I feel X when Y happens. I need Z."','Be specific about what you need — not a list of what they\'re doing wrong','Keep it short and calm — less detail is more convincing','Expect discomfort — that\'s normal when you\'re changing a pattern','Rehearse it out loud first, alone. Your body needs the practice.']
+  },
+  urge_surfing: {
+    icon:'🌊', title:'Urge Surfing', tag:'Anger · Overwhelm · Impulse Control',
+    desc:'From DBT — instead of acting on a strong urge or emotion, you observe it like a wave: let it rise, peak, and pass without being swept away.',
+    steps:['Notice the urge. Name it: "There is anger. There is the urge to ___"','Rate the intensity 0–10','Observe it — where do you feel it in your body? What does it actually feel like?','Breathe. Watch it without acting on it. You\'re surfing it, not fighting it.','Most urges peak within 20–30 minutes and pass. Wait for the wave to break.']
+  },
+  safe_place: {
+    icon:'🏡', title:'Safe Place Visualisation', tag:'Anxiety · Dissociation · Trauma',
+    desc:'Your nervous system responds to vividly imagined safety almost the same as real safety. Build this slowly so it feels genuinely real.',
+    steps:['Close your eyes. Breathe slowly.','Imagine a place — real or invented — where you feel completely safe','Build it: colours, light, temperature, sounds, smells, textures','Spend time there. Let your body soften.','When you\'re ready, slowly return — knowing you can come back anytime']
+  },
+  body_scan: {
+    icon:'🧘', title:'Body Scan', tag:'Overwhelm · Dissociation · Anxiety',
+    desc:'Pulls attention from anxious thoughts into physical sensation. Particularly useful for dissociation and held tension you didn\'t know was there.',
+    steps:['Sit or lie comfortably','Start at the crown of your head — notice sensation without judgment','Move slowly downward: face, jaw (likely clenched), neck, shoulders','Continue: chest, stomach, arms, hands, hips','Down to thighs, calves, feet, toes','Wherever there\'s tension: breathe in, let it soften on the exhale']
+  },
+  prioritisation: {
+    icon:'📋', title:'Triage Your Brain', tag:'Overwhelm · ADHD · Burnout',
+    desc:'Most overwhelm comes from 40 tasks all feeling equally urgent in your head. They\'re not. This forces you to sort them.',
+    steps:['Brain dump every task — get them all out','Label each: A (must today), B (this week), C (nice to have, but no)','Look at your A list — if there are more than 3, you\'re over-estimating urgency','Do A items in order of difficulty: hardest first while energy is highest','Cross things off visibly. Your brain needs the "done" signal.']
+  },
+  rest: {
+    icon:'🛋️', title:'Actually Rest', tag:'Burnout · Overwhelm',
+    desc:'Scrolling is not rest. Lying awake is not rest. Most of us have forgotten how to genuinely recover.',
+    steps:['Ask: "What kind of tired am I?"','Physical tired → actual sleep, stillness, warmth, no screen','Emotional tired → solitude, comfort TV/media, blanket, pets, quiet','Social tired → time completely alone with zero obligations','Creative tired → input without pressure: read, watch, listen — don\'t make anything','Sensory tired → darkness, silence, reduced stimulation (noise cancelling headphones are valid)']
+  },
+  exposure: {
+    icon:'🪜', title:'Gentle Exposure Ladder', tag:'Anxiety · Avoidance',
+    desc:'Avoidance keeps anxiety alive. Gradual exposure — facing what scares you in small, manageable steps — is one of the most effective anxiety treatments that exists.',
+    steps:['Write down the thing you\'ve been avoiding','Rate how anxious it makes you (0–10)','Break it into 5–8 steps, from least scary (3/10) to most (8–9/10)','Start at the bottom. Stay in the situation until your anxiety naturally reduces.','Move up gradually over days or weeks. The ladder is the treatment.']
+  },
+  cbt_worry: {
+    icon:'🪤', title:'Scheduled Worry Time', tag:'Anxiety · Rumination',
+    desc:'You can\'t stop worrying by trying not to worry. But you can contain it. Set a "worry window" — your brain knows its worries will get attention, just not right now.',
+    steps:['Choose a 15-minute "worry window" at the same time each day (not near bedtime)','When a worry appears outside that time: write it on a list and consciously postpone it','During your window: review the list, problem-solve what you can, accept what you can\'t','After 15 minutes, close it. You\'re done until tomorrow.','Notice how many worries resolve themselves before your window even arrives']
+  },
+  connection: {
+    icon:'👥', title:'Micro-Connection', tag:'Loneliness · Isolation',
+    desc:'When loneliness is deep, big social situations feel impossible. Micro-connections — tiny moments of human contact — chip away at isolation without the overwhelm.',
+    steps:['Send one text to someone you care about. It doesn\'t need to be deep.','Notice warmth in a brief interaction — cashier, neighbour, anyone','Post something small in an online community that gets you','Reply to a comment in a space you already love','Remember: being witnessed, even briefly, matters. You don\'t need depth every time.']
+  },
+  boundaries: {
+    icon:'🚧', title:'Boundary Setting', tag:'People-Pleasing · Burnout',
+    desc:'Boundaries aren\'t walls — they\'re the conditions under which you can show up as yourself. Setting them is scary. It\'s also an act of self-respect.',
+    steps:['Identify where your energy is leaking (who or what consistently drains you)','Get clear on what you need: "I need X in order to feel okay"','Say the boundary clearly, calmly, once. You do not need to justify it.','Expect pushback — it doesn\'t mean you\'re wrong, it means the other person is adjusting','Remind yourself: other people\'s disappointment is not your responsibility to fix']
+  },
+  body_doubling: {
+    icon:'👯', title:'Body Doubling', tag:'ADHD · Focus · Procrastination',
+    desc:'Working alongside someone else — physically or virtually — dramatically improves focus for ADHD brains. You don\'t need to interact. Presence is the mechanism.',
+    steps:['Find a body double: friend, café, library, or a "study with me" YouTube video','Tell them (or yourself out loud) what you\'re working on for the next 25 minutes','Work side by side — presence is the point, not conversation','Take a 5-minute break, then go again','Focusmate.com is free and purpose-built for this. Life-changing for many ADHD people.']
+  }
+};
+
+const RESOURCES_APPS = [
+  { icon:'🐣', name:'Finch', desc:'Self-care pet app. Gentle daily check-ins with no pressure. Excellent for ADHD and low motivation days.', tag:'Free · iOS & Android', url:'https://finchcare.com' },
+  { icon:'📊', name:'Bearable', desc:'Track mood, symptoms, energy and sleep. Excellent for spotting your own patterns over time — the charts are genuinely insightful.', tag:'Free + Premium · iOS & Android', url:'https://bearable.app' },
+  { icon:'📔', name:'Daylio', desc:'Micro-journal. Log mood + activities in under a minute. Perfect for ADHD brains who want data without the commitment.', tag:'Free · iOS & Android', url:'https://daylio.net' },
+  { icon:'🧘', name:'Insight Timer', desc:'Thousands of free guided meditations. Genuinely free — not "free trial free". Great sleep and anxiety content.', tag:'Free · iOS & Android', url:'https://insighttimer.com' },
+  { icon:'🤖', name:'Woebot', desc:'AI-based CBT chatbot. Good for off-hours support and thought challenging when your therapist isn\'t available.', tag:'Free · iOS & Android', url:'https://woebothealth.com' },
+  { icon:'🧠', name:'Calm', desc:'Sleep stories, breathing exercises, and meditations. The sleep section in particular is genuinely useful.', tag:'Paid · iOS & Android', url:'https://calm.com' },
+];
+const RESOURCES_BOOKS = [
+  { icon:'📘', name:'Why Has Nobody Told Me This Before?', desc:'Dr Julie Smith. Practical, warm mental health tools from a therapist. The most accessible first mental health book I\'ve found.', tag:'Julie Smith · Highly Recommended', url:'https://www.drjuliesmith.com/book' },
+  { icon:'📗', name:'Feeling Good', desc:'David Burns. The original CBT self-help book. Dense but genuinely, provably effective. The exercises are worth doing.', tag:'David Burns · CBT Classic', url:'https://www.goodreads.com/book/show/46674.Feeling_Good' },
+  { icon:'📙', name:'The Body Keeps the Score', desc:'Bessel van der Kolk. How trauma lives in the body and what to do about it. Life-changing but heavy — pace yourself.', tag:'Van der Kolk · Trauma & Body', url:'https://www.goodreads.com/book/show/18693771-the-body-keeps-the-score' },
+  { icon:'📕', name:'ADHD 2.0', desc:'Hallowell & Ratey. Updated ADHD science with practical tools. Equal parts validation and actionable strategies.', tag:'Hallowell & Ratey · ADHD', url:'https://www.goodreads.com/book/show/51765135-adhd-2-0' },
+  { icon:'📒', name:'Self-Compassion', desc:'Kristin Neff. The definitive book on being kinder to yourself. Evidence-based and genuinely warm. Changes the internal voice.', tag:'Kristin Neff · Self-Compassion', url:'https://self-compassion.org/the-book/' },
+  { icon:'📓', name:'Set Boundaries, Find Peace', desc:'Nedra Tawwab. Clear, practical guide to boundaries that actually sounds achievable rather than overwhelming.', tag:'Nedra Tawwab · Boundaries', url:'https://nedratawwab.com/set-boundaries-find-peace/' },
+];
+const RESOURCES_PRACTICES = [
+  { icon:'🧠', name:'CCI Self-Help Modules', desc:'Free, evidence-based CBT workbooks from the Centre for Clinical Interventions. Covers anxiety, depression, perfectionism, and more.', tag:'Free · Evidence-Based', url:'https://www.cci.health.wa.gov.au/Resources/Looking-After-Yourself' },
+  { icon:'🤲', name:'Self-Compassion.org', desc:'Kristin Neff\'s free exercises and guided meditations on self-compassion. Start with the Self-Compassion Break audio.', tag:'Free · Kristin Neff', url:'https://self-compassion.org/category/exercises/' },
+  { icon:'👯', name:'Focusmate', desc:'Free virtual body doubling. Pair with a stranger and work together. Life-changing for ADHD. No excuses not to try it.', tag:'Free · ADHD · Body Doubling', url:'https://www.focusmate.com' },
+  { icon:'🌿', name:'Mindful.org', desc:'Free mindfulness resources, guides, and practices. No signup required. Good for people new to mindfulness.', tag:'Free · Mindfulness', url:'https://www.mindful.org' },
+  { icon:'📝', name:'Moodfit', desc:'Free CBT tools, mood tracking, and thought records online. Good supplement between therapy sessions.', tag:'Free · CBT Tools', url:'https://www.getmoodfit.com' },
+  { icon:'🎙️', name:'ADHD UK Podcast', desc:'UK-specific ADHD support and community. Peer support groups and a genuinely good podcast.', tag:'Free · UK · ADHD', url:'https://adhduk.co.uk' },
+];
+const RESOURCES_SUPPORT = [
+  { icon:'📞', name:'Samaritans', desc:'24/7, free. Call 116 123 or email jo@samaritans.org. You do NOT need to be suicidal to call. If you\'re struggling, that\'s enough.', tag:'UK · 24/7 · Free', url:'https://www.samaritans.org' },
+  { icon:'💬', name:'Shout 85258', desc:'Text SHOUT to 85258 for free, confidential crisis text support. 24/7. Good if you can\'t bring yourself to talk.', tag:'UK · Text · 24/7 · Free', url:'https://giveusashout.org' },
+  { icon:'🧠', name:'Mind UK', desc:'Mental health information, support lines, and local services. Good starting point for understanding your options.', tag:'UK · Information & Support', url:'https://www.mind.org.uk' },
+  { icon:'🌈', name:'ADHD UK', desc:'UK-specific ADHD support, resources, and peer community. If you haven\'t found your people yet, they\'re here.', tag:'UK · ADHD Community', url:'https://adhduk.co.uk' },
+  { icon:'🔍', name:'BACP Therapist Directory', desc:'Find accredited therapists in the UK by location and specialism. The gold standard for finding someone qualified.', tag:'UK · Find a Therapist', url:'https://www.bacp.co.uk/search/Therapists' },
+  { icon:'💊', name:'Psychology Today UK', desc:'Find therapists by approach, location, and budget. Good for comparing options including sliding scale.', tag:'UK · Find a Therapist', url:'https://www.psychologytoday.com/gb/therapists' },
+];
+
+const PROMPTS = [
+  "What's been taking up the most space in your head lately?",
+  "Is there something you've been avoiding saying — even to yourself?",
+  "What would you tell a friend who felt exactly the way you feel right now?",
+  "What are you pretending is fine when it isn't?",
+  "What do you actually need today? Not what you think you should need — what do you actually need?",
+  "Describe the last time you felt genuinely okay. What was different?",
+  "What feeling are you most afraid to fully feel?",
+  "What's one small thing that went okay today, even if everything else was hard?",
+  "Who or what is taking up too much of your mental energy right now?",
+  "What's a story you keep telling yourself that might not be entirely true?",
+  "What does the most tired part of you need right now?",
+  "If your anxiety could speak, what would it say? What is it actually trying to protect you from?",
+  "What boundary have you been afraid to set? What's the fear underneath it?",
+  "What would 'good enough' look like today, if you allowed it to exist?",
+  "What part of yourself have you been neglecting?",
+  "What are you angry about that you haven't let yourself fully admit yet?",
+  "Write a letter to yourself from six months in the future, when things have gotten a little easier.",
+  "What's one thing you did recently that took courage — even small, quiet courage?",
+  "What do you wish someone would just say to you right now?",
+  "What version of yourself are you performing, and what would you be like if you stopped?",
+  "What's draining your energy that you have at least some control over?",
+  "What does your body feel like right now? Where is tension sitting?",
+  "What are you grieving? (It doesn't have to be a person. It can be a version of yourself, a time, a hope.)",
+  "What's been making you feel most like yourself lately?",
+  "If shame wasn't a factor, what would you do differently?",
+  "What do you keep starting and not finishing, and what does that tell you about what you actually want?",
+  "Who do you feel safest with right now, and why?",
+  "What would you do today if you trusted yourself completely?",
+  "What have you been putting off feeling?",
+  "Write about a moment this week when you were harder on yourself than you deserved.",
+];
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+
+let entries = [];
+let selectedMoods = new Set();
+let pendingDeleteId = null;
+let breathInterval = null;
+let breathPhaseIndex = 0;
+let breathCount = 4;
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+
+function init() {
+  loadEntries();
+  renderMoodGrid();
+  setupWordCount();
+  renderResources();
+  renderPrompts();
+  renderAll();
+}
+
+function loadEntries() {
+  try { entries = JSON.parse(localStorage.getItem('jie_entries') || '[]'); }
+  catch(e) { entries = []; }
+}
+
+function saveEntries() {
+  localStorage.setItem('jie_entries', JSON.stringify(entries));
+}
+
+// ─── MOOD GRID ─────────────────────────────────────────────────────────────
+
+function renderMoodGrid() {
+  document.getElementById('moodGrid').innerHTML = MOODS.map(m =>
+    `<button class="mood-btn" data-id="${m.id}" onclick="toggleMood('${m.id}',this)">${m.label}</button>`
+  ).join('');
+}
+
+function toggleMood(id, btn) {
+  if (selectedMoods.has(id)) { selectedMoods.delete(id); btn.classList.remove('selected'); }
+  else { selectedMoods.add(id); btn.classList.add('selected'); }
+}
+
+// ─── WORD COUNT ────────────────────────────────────────────────────────────
+
+function setupWordCount() {
+  document.getElementById('entryText').addEventListener('input', function() {
+    const w = this.value.trim() ? this.value.trim().split(/\s+/).length : 0;
+    document.getElementById('wordCount').textContent = `${w} word${w!==1?'s':''}`;
+  });
+}
+
+// ─── SAVE ENTRY ────────────────────────────────────────────────────────────
+
+function saveEntry() {
+  const text = document.getElementById('entryText').value.trim();
+  if (!text) {
+    const ta = document.getElementById('entryText');
+    ta.style.borderColor = 'var(--accent-amber)';
+    ta.placeholder = 'Write something first — even a few words. ✨';
+    setTimeout(() => { ta.style.borderColor = ''; }, 2000);
+    return;
+  }
+
+  const entry = {
+    id: Date.now().toString(),
+    date: new Date().toISOString().split('T')[0],
+    created: new Date().toISOString(),
+    text,
+    moods: [...selectedMoods],
+  };
+
+  entries.unshift(entry);
+  saveEntries();
+
+  document.getElementById('entryText').value = '';
+  document.getElementById('wordCount').textContent = '0 words';
+  selectedMoods.clear();
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = '✅ Saved!';
+  btn.style.background = 'var(--accent-green)';
+  setTimeout(() => { btn.textContent = '💾 Save Entry'; btn.style.background = ''; }, 2200);
+
+  renderAll();
+}
+
+function clearEntry() {
+  document.getElementById('entryText').value = '';
+  document.getElementById('wordCount').textContent = '0 words';
+  selectedMoods.clear();
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+}
+
+// ─── ANALYSIS ──────────────────────────────────────────────────────────────
+
+function analyseEntries() {
+  const allText = entries.map(e => e.text).join(' ').toLowerCase();
+
+  const patternScores = {};
+  for (const [key, p] of Object.entries(PATTERNS)) {
+    let score = 0;
+    p.keywords.forEach(kw => {
+      const matches = allText.match(new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'));
+      if (matches) score += matches.length;
+    });
+    if (score > 0) patternScores[key] = { ...p, score };
+  }
+
+  const cogScores = {};
+  for (const [key, p] of Object.entries(COGNITIVE_PATTERNS)) {
+    let score = 0;
+    p.keywords.forEach(kw => {
+      const matches = allText.match(new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'));
+      if (matches) score += matches.length;
+    });
+    if (score > 0) cogScores[key] = { ...p, score };
+  }
+
+  return { patternScores, cogScores };
+}
+
+// ─── RENDER ALL ────────────────────────────────────────────────────────────
+
+function renderAll() {
+  renderStats();
+  renderAnalysis();
+  renderHistory();
+  renderTherapySection();
+}
+
+// ─── STATS ─────────────────────────────────────────────────────────────────
+
+function renderStats() {
+  document.getElementById('statEntries').textContent = entries.length;
+
+  const totalWords = entries.reduce((sum,e) => sum + (e.text.trim().split(/\s+/).length||0), 0);
+  document.getElementById('statWords').textContent = totalWords > 999 ? (totalWords/1000).toFixed(1)+'k' : totalWords;
+
+  document.getElementById('statStreak').textContent = calcStreak();
+
+  const moodCounts = {};
+  entries.forEach(e => e.moods.forEach(m => { moodCounts[m] = (moodCounts[m]||0)+1; }));
+  const topId = Object.entries(moodCounts).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  const topMoodObj = MOODS.find(m=>m.id===topId);
+  document.getElementById('statMood').textContent = topMoodObj ? topMoodObj.label.split(' ')[0] : '—';
+}
+
+function calcStreak() {
+  if (!entries.length) return 0;
+  const dates = [...new Set(entries.map(e=>e.date))].sort((a,b)=>b.localeCompare(a));
+  let streak = 0, check = new Date().toISOString().split('T')[0];
+  for (const d of dates) {
+    if (d === check) {
+      streak++;
+      const dt = new Date(check);
+      dt.setDate(dt.getDate()-1);
+      check = dt.toISOString().split('T')[0];
+    } else break;
+  }
+  return streak;
+}
+
+// ─── ANALYSIS PANELS ───────────────────────────────────────────────────────
+
+function renderAnalysis() {
+  if (entries.length < 1) {
+    document.getElementById('patternContent').innerHTML = `<div class="empty-state"><div class="icon">🌱</div><p>Write a few entries and I'll start spotting what keeps coming up for you.</p></div>`;
+    document.getElementById('cognitiveContent').innerHTML = `<div class="empty-state"><div class="icon">🔭</div><p>Your thinking patterns will show up here.</p></div>`;
+    document.getElementById('moodContent').innerHTML = `<div class="empty-state"><div class="icon">📊</div><p>Tag your moods to see trends over time.</p></div>`;
+    return;
+  }
+
+  const { patternScores, cogScores } = analyseEntries();
+
+  // Pattern Radar
+  const sortedPatterns = Object.entries(patternScores).sort((a,b)=>b[1].score-a[1].score).slice(0,6);
+  const maxP = sortedPatterns[0]?.[1].score || 1;
+  if (sortedPatterns.length) {
+    document.getElementById('patternContent').innerHTML = `
+      <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.85rem">Based on ${entries.length} entr${entries.length!==1?'ies':'y'}</p>
+      ${sortedPatterns.map(([,p]) => `
+        <div style="margin-bottom:0.8rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem">
+            <span style="font-size:0.82rem;font-weight:600">${p.icon} ${p.label}</span>
+            <span class="chip ${p.color}" style="font-size:0.63rem">${p.score} hit${p.score!==1?'s':''}</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((p.score/maxP)*100)}%"></div></div>
+        </div>
+      `).join('')}
+    `;
+  } else {
+    document.getElementById('patternContent').innerHTML = `<div class="empty-state"><div class="icon">✨</div><p>No strong patterns detected yet. Keep writing!</p></div>`;
+  }
+
+  // Cognitive Lens
+  const sortedCog = Object.entries(cogScores).sort((a,b)=>b[1].score-a[1].score).slice(0,4);
+  if (sortedCog.length) {
+    document.getElementById('cognitiveContent').innerHTML = `
+      <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.85rem">Thinking patterns showing up in your writing</p>
+      ${sortedCog.map(([,p]) => `
+        <div style="margin-bottom:1rem">
+          <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.15rem">
+            <span>${p.icon}</span>
+            <span style="font-size:0.82rem;font-weight:600">${p.label}</span>
+            <span class="chip ${p.color}" style="font-size:0.62rem;margin-left:auto">${p.score}×</span>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-left:1.4rem;margin-bottom:0.3rem">${p.desc}</p>
+          <div class="insight-box" style="margin-left:1.4rem">💡 ${p.reframe}</div>
+        </div>
+      `).join('')}
+    `;
+  } else {
+    document.getElementById('cognitiveContent').innerHTML = `<div class="empty-state"><div class="icon">✨</div><p>No strong cognitive patterns detected. That's genuinely a good sign.</p></div>`;
+  }
+
+  // Mood Chart
+  renderMoodChart();
+}
+
+function renderMoodChart() {
+  const moodColors = {
+    anxious:'#f59e0b', low:'#3b82f6', angry:'#ef4444', overwhelmed:'#8b5cf6',
+    okay:'#14b8a6', good:'#22c55e', energised:'#f59e0b', foggy:'#64748b',
+    irritable:'#ef4444', dissociated:'#8b5cf6', hopeful:'#22c55e',
+    lonely:'#3b82f6', hyperfocus:'#f59e0b', burnt_out:'#ef4444', content:'#ec4899'
+  };
+
+  const moodCounts = {};
+  entries.forEach(e => e.moods.forEach(m => { moodCounts[m]=(moodCounts[m]||0)+1; }));
+  const top5 = Object.entries(moodCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  if (!top5.length) {
+    document.getElementById('moodContent').innerHTML = `<div class="empty-state"><div class="icon">📊</div><p>Tag your moods when you write to see your trends here.</p></div>`;
+    return;
+  }
+
+  const maxCount = Math.max(...top5.map(m=>m[1]));
+  const recent = entries.slice(0,14).reverse();
+
+  document.getElementById('moodContent').innerHTML = `
+    <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.4rem">Most frequent moods</p>
+    <div class="mini-chart">
+      ${top5.map(([id,count]) => {
+        const c = moodColors[id]||'#8b5cf6';
+        const pct = Math.max(Math.round((count/maxCount)*100), 8);
+        const label = (MOODS.find(m=>m.id===id)?.label||id)+': '+count+'×';
+        return `<div class="mini-bar" style="background:${c};height:${pct}%;opacity:0.75" data-tip="${label}"></div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.25rem;margin-top:0.5rem">
+      ${top5.map(([id,count]) => {
+        const c = moodColors[id]||'#8b5cf6';
+        const label = MOODS.find(m=>m.id===id)?.label||id;
+        return `<span style="font-size:0.68rem;background:${c}22;color:${c};padding:0.15rem 0.5rem;border-radius:100px;font-weight:600">${label} · ${count}×</span>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border)">
+      <p style="font-size:0.68rem;color:var(--text-muted);margin-bottom:0.35rem">Last ${Math.min(entries.length,14)} entries</p>
+      <div style="display:flex;gap:3px;flex-wrap:wrap">
+        ${recent.map(e => {
+          const first = e.moods[0];
+          const c = first ? (moodColors[first]||'#8b5cf6') : 'var(--border)';
+          const label = first ? (MOODS.find(m=>m.id===first)?.label||first) : 'No mood tagged';
+          return `<div style="width:16px;height:16px;border-radius:3px;background:${c};opacity:0.7;cursor:default" title="${e.date} · ${label}"></div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ─── THERAPY SECTION ───────────────────────────────────────────────────────
+
+function renderTherapySection() {
+  if (!entries.length) { renderAllTechniques(); return; }
+
+  const { patternScores } = analyseEntries();
+  const sorted = Object.entries(patternScores).sort((a,b)=>b[1].score-a[1].score);
+
+  const relevantIds = new Set();
+  sorted.slice(0,3).forEach(([,p]) => (p.therapy||[]).forEach(t => relevantIds.add(t)));
+
+  if (relevantIds.size && entries.length >= 2) {
+    const top = sorted[0]?.[1];
+    const banner = document.getElementById('therapyBanner');
+    document.getElementById('therapyBannerText').innerHTML =
+      `Based on your entries, <strong>${top.label.toLowerCase()}</strong> shows up most. I've surfaced the techniques most relevant to you — but all of them are worth exploring when you're ready.`;
+    banner.style.display = 'flex';
+  }
+
+  const relevant = [...relevantIds].filter(id => TECHNIQUES[id]);
+  const others = Object.keys(TECHNIQUES).filter(id => !relevantIds.has(id));
+
+  let html = '';
+  if (relevant.length) {
+    html += `<p style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-secondary);font-weight:700;margin-bottom:0.6rem">✨ Suggested for you</p>`;
+    relevant.forEach(id => { html += makeTechHTML(TECHNIQUES[id], true); });
+    html += `<p style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-muted);font-weight:700;margin:1rem 0 0.6rem">All techniques</p>`;
+  }
+  others.forEach(id => { html += makeTechHTML(TECHNIQUES[id], false); });
+  document.getElementById('techniquesList').innerHTML = html;
+}
+
+function renderAllTechniques() {
+  document.getElementById('techniquesList').innerHTML = Object.values(TECHNIQUES).map(t => makeTechHTML(t, false)).join('');
+}
+
+function makeTechHTML(t, highlighted) {
+  return `
+    <div class="technique-card${highlighted?' highlighted':''}" onclick="toggleTechnique(this)">
+      <div class="technique-header">
+        <div class="technique-title">
+          ${t.icon} ${t.title}
+          <span class="chip chip-purple" style="font-size:0.62rem">${t.tag}</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="technique-body">
+        <p style="margin-bottom:0.55rem">${t.desc}</p>
+        <ul class="technique-steps">${t.steps.map(s=>`<li>${s}</li>`).join('')}</ul>
+      </div>
+    </div>
+  `;
+}
+
+// ─── TOGGLE TECHNIQUE ──────────────────────────────────────────────────────
+
+function toggleTechnique(card) {
+  const body = card.querySelector('.technique-body');
+  const chev = card.querySelector('.chevron');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+
+// ─── BOX BREATHING ─────────────────────────────────────────────────────────
+
+const PHASES = ['IN','HOLD','OUT','HOLD'];
+
+function startBreath(e) {
+  e.stopPropagation();
+  document.getElementById('boxBreathTimer').style.display = 'block';
+  e.target.style.display = 'none';
+  breathPhaseIndex = 0; breathCount = 4;
+  runBreath();
+}
+
+function runBreath() {
+  const phaseEl = document.getElementById('breathPhase');
+  const countEl = document.getElementById('breathCount');
+  const bar = document.getElementById('breathBar');
+  if (!phaseEl) return;
+  phaseEl.textContent = PHASES[breathPhaseIndex];
+  countEl.textContent = breathCount;
+  bar.style.width = `${((4 - breathCount) / 4) * 100}%`;
+  breathInterval = setTimeout(() => {
+    breathCount--;
+    if (breathCount < 1) { breathPhaseIndex = (breathPhaseIndex+1)%4; breathCount = 4; }
+    runBreath();
+  }, 1000);
+}
+
+function stopBreath(e) {
+  e.stopPropagation();
+  clearTimeout(breathInterval);
+  document.getElementById('boxBreathTimer').style.display = 'none';
+  const startBtn = document.querySelector('[onclick="startBreath(event)"]');
+  if (startBtn) startBtn.style.display = '';
+}
+
+// ─── TABS ──────────────────────────────────────────────────────────────────
+
+function switchTab(name, btn) {
+  ['techniques','cbt','grounding','prompts'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===name?'block':'none';
+  });
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function switchResTab(name, btn) {
+  ['apps','books','practices','support'].forEach(t => {
+    document.getElementById('res-'+t).style.display = t===name?'block':'none';
+  });
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── CBT RECORD ────────────────────────────────────────────────────────────
+
+function saveCBTRecord() {
+  const fields = document.querySelectorAll('#cbtFields textarea');
+  const labels = ['Situation','Automatic Thought','Emotion','Evidence For','Evidence Against','Alternative Thought','Re-rated Emotion'];
+  let text = '📝 CBT Thought Record\n\n';
+  fields.forEach((f,i) => { if (f.value.trim()) text += `${labels[i]}: ${f.value.trim()}\n\n`; });
+  if (text === '📝 CBT Thought Record\n\n') { alert('Fill in at least one field first!'); return; }
+
+  entries.unshift({ id:Date.now().toString(), date:new Date().toISOString().split('T')[0], created:new Date().toISOString(), text, moods:[], type:'cbt' });
+  saveEntries();
+  clearCBT();
+  renderAll();
+
+  const btn = event.target;
+  btn.textContent = '✅ Saved!';
+  btn.style.background = 'var(--accent-green)';
+  setTimeout(() => { btn.textContent = '💾 Save to Journal'; btn.style.background = ''; }, 2200);
+}
+
+function clearCBT() {
+  document.querySelectorAll('#cbtFields textarea').forEach(f => f.value = '');
+}
+
+// ─── PROMPTS ───────────────────────────────────────────────────────────────
+
+function renderPrompts() {
+  const shuffled = [...PROMPTS].sort(() => Math.random()-0.5).slice(0, 6);
+  document.getElementById('promptsList').innerHTML = shuffled.map(p => `
+    <div class="prompt-card" onclick="usePrompt(this)">
+      <p>${p}</p>
+      <p class="hint">Click to write about this ↑</p>
+    </div>
+  `).join('');
+}
+
+function usePrompt(el) {
+  const text = el.querySelector('p').textContent;
+  const ta = document.getElementById('entryText');
+  ta.value = text + '\n\n';
+  ta.focus();
+  ta.scrollIntoView({ behavior:'smooth', block:'center' });
+  document.getElementById('wordCount').textContent = '0 words';
+}
+
+// ─── RESOURCES ─────────────────────────────────────────────────────────────
+
+function renderResources() {
+  const make = (items) => items.map(r => `
+    <a class="resource-item" href="${r.url}" target="_blank" rel="noopener noreferrer">
+      <div class="resource-icon">${r.icon}</div>
+      <div class="resource-name">${r.name}</div>
+      <div class="resource-desc">${r.desc}</div>
+      <div class="resource-tag">${r.tag}</div>
+    </a>
+  `).join('');
+  document.getElementById('resApps').innerHTML = make(RESOURCES_APPS);
+  document.getElementById('resBooks').innerHTML = make(RESOURCES_BOOKS);
+  document.getElementById('resPractices').innerHTML = make(RESOURCES_PRACTICES);
+  document.getElementById('resSupport').innerHTML = make(RESOURCES_SUPPORT);
+}
+
+// ─── HISTORY ───────────────────────────────────────────────────────────────
+
+function renderHistory() {
+  const q = document.getElementById('entrySearch').value.toLowerCase();
+  const filtered = entries.filter(e => !q || e.text.toLowerCase().includes(q));
+
+  if (!filtered.length) {
+    document.getElementById('historyContent').innerHTML = entries.length === 0
+      ? `<div class="empty-state"><div class="icon">📖</div><p>Your entries will appear here. Start writing.</p></div>`
+      : `<div class="empty-state"><div class="icon">🔍</div><p>No entries match "${q}"</p></div>`;
+    return;
+  }
+
+  document.getElementById('historyContent').innerHTML = filtered.map(e => {
+    const date = new Date(e.created).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const moodChips = e.moods.map(id => {
+      const m = MOODS.find(x=>x.id===id);
+      return m ? `<span class="chip ${m.color}" style="font-size:0.62rem">${m.label}</span>` : '';
+    }).join('');
+    const words = e.text.trim().split(/\s+/).length;
+    const isCBT = e.type === 'cbt';
+    return `
+      <div class="entry-item" id="entry-${e.id}">
+        <div class="entry-meta">
+          <span class="entry-date">${date}</span>
+          ${isCBT?'<span class="chip chip-purple" style="font-size:0.62rem">📝 CBT Record</span>':''}
+          ${moodChips}
+          <span style="font-size:0.68rem;color:var(--text-muted);margin-left:auto">${words}w</span>
+        </div>
+        <div class="entry-text entry-clamp">${safeHTML(e.text)}</div>
+        <div class="entry-actions">
+          <button class="btn-tiny expand" onclick="expandEntry('${e.id}',this)">Read more</button>
+          <button class="btn-tiny" style="border-color:var(--accent-red);color:var(--accent-red)" onclick="requestDelete('${e.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function expandEntry(id, btn) {
+  const el = document.querySelector(`#entry-${id} .entry-text`);
+  const expanded = !el.classList.contains('entry-clamp');
+  el.classList.toggle('entry-clamp', expanded);
+  btn.textContent = expanded ? 'Read more' : 'Show less';
+}
+
+function safeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ─── DELETE ────────────────────────────────────────────────────────────────
+
+function requestDelete(id) {
+  pendingDeleteId = id;
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+function closeConfirm() {
+  pendingDeleteId = null;
+  document.getElementById('confirmOverlay').classList.remove('open');
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  entries = entries.filter(e => e.id !== pendingDeleteId);
+  saveEntries();
+  closeConfirm();
+  renderAll();
+}
+
+document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+
+// ─── IMPORT TYPINGMIND ─────────────────────────────────────────────────────
+
+function importTypingMind(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+
+  const status = document.getElementById('importStatus');
+  const log = document.getElementById('importLog');
+  log.style.display = 'block';
+  log.innerHTML = '';
+  status.textContent = 'Reading files…';
+
+  let imported = 0;
+  let skipped = 0;
+  let filesProcessed = 0;
+  const newEntries = [];
+  const existingTexts = new Set(entries.map(e => e.text.substring(0, 80)));
+
+  const MOOD_KEYWORDS = {
+    anxious:     ['anxious','anxiety','worried','worry','nervous','scared','panic','dread','uneasy','on edge'],
+    low:         ['sad','hopeless','low','depressed','empty','numb','tearful','crying','grey','flat'],
+    angry:       ['angry','furious','frustrated','annoyed','rage','fuming','wound up','seething'],
+    overwhelmed: ['overwhelmed','too much','drowning','can\'t cope','swamped','buried','too many'],
+    dissociated: ['dissociated','zoning out','spaced out','not real','floating','brain fog','autopilot'],
+    lonely:      ['lonely','isolated','alone','no one','invisible','left out'],
+    burnt_out:   ['burnt out','burned out','drained','depleted','running on empty','no energy'],
+    foggy:       ['foggy','brain fog','can\'t think','fuzzy','hazy','unclear'],
+    hyperfocus:  ['hyperfocus','hyperfocused','can\'t stop','rabbit hole','doom scroll'],
+    good:        ['good day','feeling good','happy','excited','positive','great'],
+    hopeful:     ['hopeful','hope','looking forward','optimistic','better than'],
+    content:     ['content','calm','peaceful','settled','okay actually'],
+  };
+
+  function guessMoods(text) {
+    const lower = text.toLowerCase();
+    const moods = new Set();
+    for (const [mood, keywords] of Object.entries(MOOD_KEYWORDS)) {
+      if (keywords.some(kw => lower.includes(kw))) moods.add(mood);
+    }
+    return [...moods].slice(0, 4);
+  }
+
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      filesProcessed++;
+      try {
+        const json = JSON.parse(e.target.result);
+        const chats = json?.data?.chats || [];
+
+        if (!chats.length) {
+          log.innerHTML += `⚠️ ${file.name}: no chats found or wrong format<br>`;
+        }
+
+        chats.forEach(chat => {
+          const chatTitle = chat.chatTitle || 'Untitled chat';
+          const chatDate = (chat.createdAt || new Date().toISOString()).substring(0, 10);
+          const msgs = chat.messages || [];
+
+          msgs.forEach(msg => {
+            if (msg.role !== 'user') return;
+
+            const content = msg.content;
+            let text = '';
+            if (Array.isArray(content)) {
+              text = content.map(p => (typeof p === 'object' ? p.text || '' : p)).join(' ').trim();
+            } else {
+              text = String(content || '').trim();
+            }
+
+            if (text.length < 15) return;
+
+            // Deduplicate
+            const preview = text.substring(0, 80);
+            if (existingTexts.has(preview)) { skipped++; return; }
+            existingTexts.add(preview);
+
+            const moods = guessMoods(text);
+            const timestamp = msg.createdAt || chat.createdAt || new Date().toISOString();
+
+            newEntries.push({
+              id: 'imported_' + Math.random().toString(36).substring(2) + '_' + Date.now(),
+              date: chatDate,
+              created: timestamp,
+              text: text,
+              moods: moods,
+              source: chatTitle,
+              imported: true,
+            });
+            imported++;
+          });
+
+          log.innerHTML += `✅ "${chatTitle}" — ${msgs.filter(m=>m.role==='user').length} messages<br>`;
+        });
+
+      } catch(err) {
+        log.innerHTML += `❌ ${file.name}: could not parse — ${err.message}<br>`;
+      }
+
+      // When all files done
+      if (filesProcessed === files.length) {
+        // Sort new entries by date, oldest first, then prepend to existing
+        newEntries.sort((a,b) => new Date(a.created) - new Date(b.created));
+        entries = [...newEntries, ...entries];
+        // Re-sort everything newest first
+        entries.sort((a,b) => new Date(b.created) - new Date(a.created));
+        saveEntries();
+        renderAll();
+
+        const msg = `✨ Imported ${imported} messages across ${files.length} file${files.length!==1?'s':''}${skipped?' ('+skipped+' duplicates skipped)':''}.`;
+        log.innerHTML += `<br><strong style="color:var(--accent-purple)">${msg}</strong>`;
+        status.textContent = msg;
+        input.value = ''; // reset so same file can be re-chosen
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+function clearAllEntries() {
+  if (!entries.length) return;
+  if (!confirm(`Delete all ${entries.length} entries? This cannot be undone.`)) return;
+  entries = [];
+  saveEntries();
+  renderAll();
+  document.getElementById('importStatus').textContent = 'All entries cleared.';
+}
+
+// ─── GO ────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
