@@ -2,12 +2,13 @@
 // MISSION CONTROL — Service Worker v1.0
 // ============================================
 
-const CACHE_NAME = 'mission-control-v2';
+const CACHE_NAME = 'mission-control-v3';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './mission-control.html',
   './journal.html',
+  './feelings.html',
   './mc-style.css',
   './app.js',
   './manifest.json',
