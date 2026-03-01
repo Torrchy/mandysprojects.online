@@ -358,15 +358,15 @@
     }
     .spark-bar {
       width: 4px; border-radius: 2px;
-      background: #8b5cf6; opacity: 0.4;
+      background: #8b5cf6; opacity: 0.35;
       transition: height 0.3s, opacity 0.3s;
     }
     .spark-bar.latest { opacity: 1; }
     .presence-scale {
-      display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem;
+      display: flex; gap: 0.35rem; margin-bottom: 0.5rem;
     }
     .presence-btn {
-      flex: 1; min-width: 28px;
+      flex: 1;
       height: 36px; border-radius: 8px;
       border: 1.5px solid #1e1e35;
       background: #0f0f1c;
@@ -378,13 +378,125 @@
     .presence-btn.selected { border-color: #8b5cf6; background: rgba(139,92,246,0.15); color: #8b5cf6; }
     .presence-poles {
       display: flex; justify-content: space-between;
-      font-size: 0.6rem; color: #404060; margin-top: 0.3rem;
+      font-size: 0.6rem; color: #404060; margin-bottom: 0.5rem;
     }
     .presence-saved {
       font-size: 0.7rem; color: #22c55e; margin-top: 0.5rem;
       text-align: center; opacity: 0; transition: opacity 0.3s;
     }
     .presence-saved.show { opacity: 1; }
+
+    /* grounding tips */
+    .grounding-tip {
+      margin-top: 0.8rem;
+      background: rgba(139,92,246,0.07);
+      border: 1px solid rgba(139,92,246,0.18);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      display: none;
+    }
+    .grounding-tip.show { display: block; }
+    .grounding-tip-label {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #8b5cf6; margin-bottom: 0.4rem;
+    }
+    .grounding-tip-text {
+      font-size: 0.8rem; color: #c4c4d8; line-height: 1.55;
+    }
+    .grounding-steps {
+      margin-top: 0.5rem; padding-left: 0;
+      list-style: none; display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .grounding-steps li {
+      font-size: 0.78rem; color: #9090b8; line-height: 1.4;
+      padding-left: 1.2rem; position: relative;
+    }
+    .grounding-steps li::before {
+      content: '→'; position: absolute; left: 0; color: #8b5cf6; font-size: 0.7rem;
+    }
+
+    /* reminder toggle */
+    .presence-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 0.85rem; padding-top: 0.75rem;
+      border-top: 1px solid #1e1e35;
+    }
+    .reminder-label {
+      font-size: 0.68rem; color: #7070a0;
+    }
+    .reminder-label span { color: #404060; font-size: 0.62rem; display: block; }
+    .toggle-switch {
+      position: relative; width: 40px; height: 22px; flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute; inset: 0; border-radius: 99px;
+      background: #1e1e35; cursor: pointer; transition: background 0.2s;
+    }
+    .toggle-track::after {
+      content: ''; position: absolute;
+      top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #7070a0; transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background: rgba(139,92,246,0.35); }
+    .toggle-switch input:checked + .toggle-track::after {
+      transform: translateX(18px); background: #8b5cf6;
+    }
+
+    /* ── REMINDER SETTINGS ── */
+    .reminder-controls {
+      display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0;
+    }
+    .rs-gear {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: none; border: 1px solid #1e1e35;
+      color: #404060; font-size: 0.85rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.2s, color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .rs-gear:hover, .rs-gear.open { border-color: #8b5cf6; color: #8b5cf6; }
+    .rs-panel { display: none; flex-direction: column; gap: 0.8rem; }
+    .rs-panel.open {
+      display: flex;
+      border-top: 1px solid #1e1e35;
+      padding-top: 0.9rem;
+      margin-top: 0.75rem;
+    }
+    .rs-section { display: flex; flex-direction: column; gap: 0.45rem; }
+    .rs-label {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #404060;
+    }
+    .rs-chips { display: flex; gap: 0.35rem; }
+    .rs-chip {
+      flex: 1; height: 32px; border-radius: 7px;
+      border: 1.5px solid #1e1e35; background: #0f0f1c;
+      color: #7070a0; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .rs-chip.active { border-color: #8b5cf6; background: rgba(139,92,246,0.15); color: #8b5cf6; }
+    .rs-time-row { display: flex; align-items: center; gap: 0.5rem; }
+    .rs-select {
+      flex: 1; height: 34px; border-radius: 7px;
+      border: 1.5px solid #1e1e35; background: #0f0f1c;
+      color: #e8e8f0; font-size: 0.78rem; font-weight: 500;
+      padding: 0 0.5rem; cursor: pointer;
+      -webkit-appearance: none; appearance: none; outline: none;
+    }
+    .rs-select:focus { border-color: #8b5cf6; }
+    .rs-time-sep { font-size: 0.7rem; color: #404060; flex-shrink: 0; }
+    .rs-days { display: flex; gap: 0.3rem; }
+    .rs-day {
+      flex: 1; height: 32px; border-radius: 7px;
+      border: 1.5px solid #1e1e35; background: #0f0f1c;
+      color: #7070a0; font-size: 0.68rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .rs-day.active { border-color: #8b5cf6; background: rgba(139,92,246,0.15); color: #8b5cf6; }
   </style>
 </head>
 <body>
@@ -449,10 +561,65 @@
       </div>
       <div class="presence-scale" id="presenceScale"></div>
       <div class="presence-poles">
-        <span>Fully here</span>
         <span>Behind glass</span>
+        <span>Fully here</span>
       </div>
       <div class="presence-saved" id="presenceSaved">✓ Logged</div>
+
+      <!-- Grounding tip (shows for scores < 6) -->
+      <div class="grounding-tip" id="groundingTip">
+        <div class="grounding-tip-label" id="groundingTipLabel">Try this</div>
+        <div class="grounding-tip-text" id="groundingTipText"></div>
+        <ul class="grounding-steps" id="groundingSteps"></ul>
+      </div>
+
+      <!-- Reminder toggle + settings -->
+      <div class="presence-footer">
+        <div class="reminder-label">
+          Body check-in reminders
+          <span id="reminderStatus">Every 2h · 8am–10pm · every day</span>
+        </div>
+        <div class="reminder-controls">
+          <button class="rs-gear" id="reminderGear" title="Customise reminders">⚙</button>
+          <label class="toggle-switch">
+            <input type="checkbox" id="reminderToggle">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Settings panel (collapsed by default) -->
+      <div class="rs-panel" id="reminderSettingsPanel">
+        <div class="rs-section">
+          <div class="rs-label">Frequency</div>
+          <div class="rs-chips" id="rsFreqChips">
+            <button class="rs-chip" data-val="60">1h</button>
+            <button class="rs-chip" data-val="120">2h</button>
+            <button class="rs-chip" data-val="180">3h</button>
+            <button class="rs-chip" data-val="240">4h</button>
+          </div>
+        </div>
+        <div class="rs-section">
+          <div class="rs-label">Active hours</div>
+          <div class="rs-time-row">
+            <select class="rs-select" id="rsStartHour"></select>
+            <span class="rs-time-sep">to</span>
+            <select class="rs-select" id="rsEndHour"></select>
+          </div>
+        </div>
+        <div class="rs-section">
+          <div class="rs-label">Days</div>
+          <div class="rs-days">
+            <button class="rs-day" data-day="1">M</button>
+            <button class="rs-day" data-day="2">T</button>
+            <button class="rs-day" data-day="3">W</button>
+            <button class="rs-day" data-day="4">T</button>
+            <button class="rs-day" data-day="5">F</button>
+            <button class="rs-day" data-day="6">S</button>
+            <button class="rs-day" data-day="0">S</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Status chips -->
@@ -661,10 +828,87 @@
 
     // ── Presence widget
     (function() {
-      var KEY = 'mp_presence_log';
-      var log = JSON.parse(localStorage.getItem(KEY) || '[]');
-      var selected = null;
-      var savedTimer = null;
+      var KEY          = 'mp_presence_log';
+      var REM_KEY      = 'mp_reminders_enabled';
+      var SETTINGS_KEY = 'mp_reminder_settings';
+      var log          = JSON.parse(localStorage.getItem(KEY) || '[]');
+      var savedTimer   = null;
+
+      // Default reminder settings
+      var DEFAULT_SETTINGS = { intervalMin: 120, startHour: 8, endHour: 22, days: [0,1,2,3,4,5,6] };
+      var settings = Object.assign({}, DEFAULT_SETTINGS);
+      try {
+        var _stored = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+        if (_stored) settings = Object.assign(settings, _stored);
+      } catch(e) {}
+
+      // ── Helpers
+      function formatHour(h) {
+        if (h === 0)  return '12am';
+        if (h === 12) return '12pm';
+        return h < 12 ? h + 'am' : (h - 12) + 'pm';
+      }
+
+      function getSettingsSummary() {
+        var freq = settings.intervalMin % 60 === 0
+          ? (settings.intervalMin / 60) + 'h'
+          : settings.intervalMin + 'min';
+        var start = formatHour(settings.startHour);
+        var end   = formatHour(settings.endHour);
+        var d = settings.days;
+        var dayStr;
+        if (d.length === 7) {
+          dayStr = 'every day';
+        } else if (d.length === 5 && [1,2,3,4,5].every(function(x){ return d.indexOf(x) !== -1; })) {
+          dayStr = 'weekdays';
+        } else if (d.length === 2 && d.indexOf(0) !== -1 && d.indexOf(6) !== -1) {
+          dayStr = 'weekends';
+        } else {
+          dayStr = d.length + ' days';
+        }
+        return 'Every ' + freq + ' · ' + start + '–' + end + ' · ' + dayStr;
+      }
+
+      // ── Grounding tips (1=behind glass, 10=fully here)
+      var TIPS = {
+        '1-2': {
+          label: 'Very disconnected — try strong physical input',
+          text: 'Your nervous system needs a clear signal that you\'re safe in your body right now.',
+          steps: [
+            'Hold an ice cube in each hand for 30 seconds',
+            'Press your feet hard into the floor — feel the resistance',
+            'Splash cold water on your face or hold cold water to your wrists',
+            'Put your back firmly against a wall — feel the solid support behind you'
+          ]
+        },
+        '3-4': {
+          label: 'Quite dissociated — 5-4-3-2-1 grounding',
+          text: 'Use your senses to anchor you back into the room you\'re actually in.',
+          steps: [
+            '5 things you can SEE — name them out loud or in your head',
+            '4 things you can physically TOUCH right now',
+            '3 things you can HEAR in this moment',
+            '2 things you can SMELL (or would recognise if you could)',
+            '1 thing you can TASTE'
+          ]
+        },
+        '5': {
+          label: 'A bit drifty — gentle body anchor',
+          text: 'You\'re closer than you think. Just a few moments of deliberate noticing.',
+          steps: [
+            'Take 3 slow breaths — feel your chest rise and fall',
+            'Notice the weight of your body: where does it meet the chair or floor?',
+            'Name one thing that\'s true right now in this room'
+          ]
+        }
+      };
+
+      function getTip(val) {
+        if (val <= 2) return TIPS['1-2'];
+        if (val <= 4) return TIPS['3-4'];
+        if (val === 5) return TIPS['5'];
+        return null;
+      }
 
       function buildScale() {
         var scale = document.getElementById('presenceScale');
@@ -674,28 +918,41 @@
             var btn = document.createElement('button');
             btn.className = 'presence-btn';
             btn.textContent = val;
-            btn.title = val <= 3 ? 'Fully here' : val <= 7 ? 'Somewhere in between' : 'Behind glass';
+            btn.title = val <= 2 ? 'Behind glass' : val <= 5 ? 'Drifting' : val <= 8 ? 'Getting there' : 'Fully here';
             btn.addEventListener('click', function() {
               document.querySelectorAll('.presence-btn').forEach(function(b) { b.classList.remove('selected'); });
               btn.classList.add('selected');
-              selected = val;
               savePresence(val);
+              showTip(val);
             });
             scale.appendChild(btn);
           })(i);
         }
       }
 
+      function showTip(val) {
+        var tip     = getTip(val);
+        var tipEl   = document.getElementById('groundingTip');
+        var labelEl = document.getElementById('groundingTipLabel');
+        var textEl  = document.getElementById('groundingTipText');
+        var stepsEl = document.getElementById('groundingSteps');
+        if (!tip) { tipEl.classList.remove('show'); return; }
+        labelEl.textContent = tip.label;
+        textEl.textContent  = tip.text;
+        stepsEl.innerHTML   = tip.steps.map(function(s) { return '<li>' + s + '</li>'; }).join('');
+        tipEl.classList.add('show');
+      }
+
       function savePresence(val) {
         var entry = { ts: new Date().toISOString(), value: val };
         log.unshift(entry);
-        if (log.length > 30) log = log.slice(0, 30);
+        if (log.length > 60) log = log.slice(0, 60);
         localStorage.setItem(KEY, JSON.stringify(log));
         buildSparkline();
         var saved = document.getElementById('presenceSaved');
         saved.classList.add('show');
         clearTimeout(savedTimer);
-        savedTimer = setTimeout(function() { saved.classList.remove('show'); }, 2000);
+        savedTimer = setTimeout(function() { saved.classList.remove('show'); }, 2200);
       }
 
       function buildSparkline() {
@@ -705,13 +962,13 @@
         recent.forEach(function(entry, i) {
           var bar = document.createElement('div');
           bar.className = 'spark-bar' + (i === recent.length - 1 ? ' latest' : '');
-          var pct = ((entry.value - 1) / 9) * 100;
-          bar.style.height = Math.max(4, pct * 0.2) + 'px';
+          var pct = (entry.value - 1) / 9;
+          bar.style.height = Math.max(3, Math.round(pct * 18)) + 'px';
           el.appendChild(bar);
         });
       }
 
-      // Highlight today's last entry if exists
+      // Restore today's last entry
       var today = new Date().toISOString().slice(0, 10);
       var todayEntry = log.find(function(e) { return e.ts.slice(0, 10) === today; });
       buildScale();
@@ -719,6 +976,127 @@
       if (todayEntry) {
         var btns = document.querySelectorAll('.presence-btn');
         if (btns[todayEntry.value - 1]) btns[todayEntry.value - 1].classList.add('selected');
+        showTip(todayEntry.value);
+      }
+
+      // ── SW messaging
+      function sendSWMessage(msg) {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage(msg);
+        }
+      }
+
+      // ── Reminder settings UI
+      function initReminderSettings() {
+        // Frequency chips
+        var chips = document.querySelectorAll('#rsFreqChips .rs-chip');
+        chips.forEach(function(chip) {
+          var val = parseInt(chip.dataset.val);
+          if (val === settings.intervalMin) chip.classList.add('active');
+          chip.addEventListener('click', function() {
+            chips.forEach(function(c) { c.classList.remove('active'); });
+            chip.classList.add('active');
+            settings.intervalMin = val;
+            saveSettingsAndReschedule();
+          });
+        });
+
+        // Hour selects
+        var startSel = document.getElementById('rsStartHour');
+        var endSel   = document.getElementById('rsEndHour');
+        for (var h = 0; h <= 23; h++) {
+          var o1 = document.createElement('option');
+          o1.value = h; o1.textContent = formatHour(h);
+          if (h === settings.startHour) o1.selected = true;
+          startSel.appendChild(o1);
+          var o2 = document.createElement('option');
+          o2.value = h; o2.textContent = formatHour(h);
+          if (h === settings.endHour) o2.selected = true;
+          endSel.appendChild(o2);
+        }
+        startSel.addEventListener('change', function() {
+          settings.startHour = parseInt(startSel.value);
+          saveSettingsAndReschedule();
+        });
+        endSel.addEventListener('change', function() {
+          settings.endHour = parseInt(endSel.value);
+          saveSettingsAndReschedule();
+        });
+
+        // Day buttons
+        var dayBtns = document.querySelectorAll('.rs-day');
+        dayBtns.forEach(function(btn) {
+          var day = parseInt(btn.dataset.day);
+          if (settings.days.indexOf(day) !== -1) btn.classList.add('active');
+          btn.addEventListener('click', function() {
+            var idx = settings.days.indexOf(day);
+            if (idx !== -1) {
+              if (settings.days.length > 1) { // keep at least 1 day
+                settings.days = settings.days.filter(function(d) { return d !== day; });
+                btn.classList.remove('active');
+              }
+            } else {
+              settings.days.push(day);
+              btn.classList.add('active');
+            }
+            saveSettingsAndReschedule();
+          });
+        });
+      }
+
+      function saveSettingsAndReschedule() {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        var statusEl = document.getElementById('reminderStatus');
+        statusEl.textContent = getSettingsSummary();
+        if (localStorage.getItem(REM_KEY) === '1' && Notification.permission === 'granted') {
+          sendSWMessage({ type: 'SCHEDULE_PRESENCE', settings: settings });
+        }
+      }
+
+      // Gear button opens/closes settings panel
+      document.getElementById('reminderGear').addEventListener('click', function() {
+        document.getElementById('reminderSettingsPanel').classList.toggle('open');
+        document.getElementById('reminderGear').classList.toggle('open');
+      });
+
+      initReminderSettings();
+
+      // ── Reminder toggle
+      var toggle   = document.getElementById('reminderToggle');
+      var statusEl = document.getElementById('reminderStatus');
+      var enabled  = localStorage.getItem(REM_KEY) === '1';
+      toggle.checked = enabled;
+      statusEl.textContent = getSettingsSummary();
+
+      toggle.addEventListener('change', function() {
+        if (toggle.checked) {
+          Notification.requestPermission().then(function(perm) {
+            if (perm === 'granted') {
+              localStorage.setItem(REM_KEY, '1');
+              statusEl.textContent = getSettingsSummary();
+              sendSWMessage({ type: 'SCHEDULE_PRESENCE', settings: settings });
+              var freqStr = settings.intervalMin >= 60
+                ? (settings.intervalMin / 60) + (settings.intervalMin === 60 ? ' hour' : ' hours')
+                : settings.intervalMin + ' minutes';
+              new Notification('Body check-ins enabled 🌫️', {
+                body: 'I\'ll nudge you every ' + freqStr + ' to check in with yourself.',
+                icon: '/icon-192.png'
+              });
+            } else {
+              toggle.checked = false;
+              statusEl.textContent = 'Allow notifications to enable';
+            }
+          });
+        } else {
+          localStorage.removeItem(REM_KEY);
+          statusEl.textContent = getSettingsSummary();
+          sendSWMessage({ type: 'CANCEL_PRESENCE' });
+        }
+      });
+
+      // Re-register on page load if still enabled
+      if (enabled && Notification.permission === 'granted') {
+        sendSWMessage({ type: 'SCHEDULE_PRESENCE', settings: settings });
       }
     })();
   </script>
