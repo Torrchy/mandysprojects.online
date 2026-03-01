@@ -2,13 +2,14 @@
 // MISSION CONTROL — Service Worker v1.0
 // ============================================
 
-const CACHE_NAME = 'mission-control-v4';
+const CACHE_NAME = 'mission-control-v5';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './mission-control.html',
   './journal.html',
   './feelings.html',
+  './habits.html',
   './mc-style.css',
   './app.js',
   './manifest.json',
@@ -47,6 +48,67 @@ self.addEventListener('activate', event => {
           })
       )
     ).then(() => self.clients.claim())
+  );
+});
+
+// ---- Message: schedule habit notifications (persists briefly after page close) ----
+self.addEventListener('message', event => {
+  if (!event.data || event.data.type !== 'SCHEDULE_HABITS') return;
+
+  // Clear any previously scheduled timers
+  if (self._habitTimers) self._habitTimers.forEach(t => clearTimeout(t));
+  self._habitTimers = [];
+
+  const habits = event.data.habits || [];
+  habits.forEach(habit => {
+    const delay = habit.msUntilNotification;
+    if (!delay || delay <= 0 || delay > 25 * 60 * 60 * 1000) return;
+
+    const t = setTimeout(() => {
+      const streak = habit.streak || 0;
+      const body = streak > 0
+        ? `🔥 ${streak} day streak — keep it going!`
+        : 'Start building your streak today.';
+
+      self.registration.showNotification(`${habit.icon} ${habit.name}`, {
+        body,
+        tag: `habit-${habit.id}`,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        vibrate: [100, 50, 100],
+        data: { habitId: habit.id },
+        actions: [
+          { action: 'done',  title: '✓ Done'  },
+          { action: 'later', title: '🔔 Later' },
+        ],
+      });
+    }, delay);
+
+    self._habitTimers.push(t);
+  });
+});
+
+// ---- Notification click: mark done via URL param or just open page ----
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const habitId = event.notification.data?.habitId;
+
+  const url = (event.action === 'done' && habitId)
+    ? `./habits.html?done=${habitId}`
+    : './habits.html';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      // If habits page already open, focus + navigate it
+      for (const client of clientList) {
+        if (client.url.includes('habits.html') && 'focus' in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      // Otherwise open a new window
+      if (clients.openWindow) return clients.openWindow(url);
+    })
   );
 });
 
