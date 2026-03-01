@@ -34,7 +34,12 @@ body {
     background: var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
+    min-height: 100dvh; /* dynamic viewport height — handles Android address bar */
     overflow-x: hidden;
+    /* Safe area insets for notched phones / Android gesture nav */
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
 }
 
 /* Dot grid background */
@@ -71,6 +76,8 @@ body::after {
     align-items: center;
     justify-content: space-between;
     padding: 0.85rem 1.5rem;
+    /* Push nav down on notched/status-bar phones */
+    padding-top: calc(0.85rem + env(safe-area-inset-top));
     background: rgba(7,7,15,0.88);
     backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
