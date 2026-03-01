@@ -5,101 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Mandy's Projects</title>
 
-  <!-- PWA Setup -->
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#080808">
+  <meta name="theme-color" content="#07070f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Mandy's Projects">
+  <meta name="apple-mobile-web-app-title" content="MP·">
   <link rel="apple-touch-icon" href="icon-192.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
   <style>
     :root {
-      --bg: #080808;
-      --lime: #c8ff00;
-      --pink: #ff2d78;
-      --cyan: #00e5ff;
-      --orange: #ff6b1a;
-      --purple: #b44fff;
-      --white: #f0ede6;
+      --bg:          #07070f;
+      --bg2:         #0f0f1c;
+      --bg3:         #131320;
+      --border:      #1e1e35;
+      --text:        #e8e8f0;
+      --text2:       #7070a0;
+      --text3:       #404060;
+      --purple:      #8b5cf6;
+      --purple-dim:  rgba(139,92,246,0.12);
+      --green:       #22c55e;
+      --green-dim:   rgba(34,197,94,0.12);
+      --pink:        #ec4899;
+      --pink-dim:    rgba(236,72,153,0.12);
+      --cyan:        #14b8a6;
+      --cyan-dim:    rgba(20,184,166,0.12);
+      --amber:       #f59e0b;
+      --red:         #ef4444;
+      --nav-h:       calc(56px + env(safe-area-inset-top));
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
     body {
+      font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg);
-      color: var(--white);
-      font-family: 'Space Mono', monospace;
-      min-height: 100vh;
+      color: var(--text);
+      min-height: 100dvh;
       overflow-x: hidden;
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* Dot grid background */
+    /* Dot grid */
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
-      background-image: radial-gradient(rgba(200,255,0,0.08) 1px, transparent 1px);
-      background-size: 32px 32px;
-      pointer-events: none;
-      z-index: 0;
+      position: fixed; inset: 0;
+      background-image: radial-gradient(rgba(139,92,246,0.055) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none; z-index: 0;
     }
 
-    /* ── TOP APP BAR ── */
+    /* Ambient glow */
+    body::after {
+      content: '';
+      position: fixed; top: -160px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 400px;
+      background: radial-gradient(ellipse, rgba(139,92,246,0.07) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── TOP NAV ── */
     .app-nav {
-      position: sticky;
-      top: 0;
-      z-index: 200;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: calc(56px + env(safe-area-inset-top));
+      position: sticky; top: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      height: var(--nav-h);
       padding: 0 1rem;
       padding-top: env(safe-area-inset-top);
-      background: rgba(8,8,8,0.92);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(200,255,0,0.08);
+      background: rgba(7,7,15,0.92);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
     }
     .app-nav-title {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--lime);
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
+      font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--purple);
+      position: absolute; left: 50%; transform: translateX(-50%);
       pointer-events: none;
     }
 
     /* ── HAMBURGER ── */
     .hamburger {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 5px;
-      width: 40px;
-      height: 40px;
-      padding: 8px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      border-radius: 8px;
-      transition: background 0.2s;
-      flex-shrink: 0;
+      display: flex; flex-direction: column; justify-content: center;
+      gap: 5px; width: 40px; height: 40px; padding: 8px;
+      background: none; border: none; cursor: pointer;
+      border-radius: 8px; transition: background 0.2s; flex-shrink: 0;
     }
-    .hamburger:hover { background: rgba(200,255,0,0.08); }
+    .hamburger:hover { background: var(--purple-dim); }
     .hamburger span {
-      display: block;
-      height: 2px;
-      background: var(--white);
-      border-radius: 2px;
-      transition: all 0.25s ease;
-      transform-origin: center;
+      display: block; height: 2px; background: var(--text);
+      border-radius: 2px; transition: all 0.25s ease; transform-origin: center;
     }
     .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
     .hamburger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
@@ -107,297 +106,204 @@
 
     /* ── SIDEBAR OVERLAY ── */
     .sidebar-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 300;
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65); z-index: 300;
+      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+      opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
     }
     .sidebar-overlay.visible { opacity: 1; pointer-events: all; }
 
-    /* ── SIDEBAR DRAWER ── */
+    /* ── SIDEBAR ── */
     .sidebar {
-      position: fixed;
-      top: 0; left: 0;
-      height: 100%;
-      width: 260px;
-      max-width: 80vw;
-      background: #0f0f1c;
-      border-right: 1px solid #1e1e35;
-      z-index: 400;
-      transform: translateX(-100%);
-      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      flex-direction: column;
+      position: fixed; top: 0; left: 0; height: 100%;
+      width: 260px; max-width: 80vw;
+      background: var(--bg2); border-right: 1px solid var(--border);
+      z-index: 400; transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+      display: flex; flex-direction: column;
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
     }
     .sidebar.open { transform: translateX(0); }
+
     .sidebar-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.2rem 1.2rem 1rem;
-      border-bottom: 1px solid #1e1e35;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 1.2rem 1rem; border-bottom: 1px solid var(--border);
     }
     .sidebar-logo { display: flex; align-items: center; gap: 0.6rem; }
     .sidebar-logo-icon { font-size: 1.3rem; }
     .sidebar-logo-text {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--lime);
-      letter-spacing: 0.08em;
+      font-size: 0.95rem; font-weight: 700;
+      color: var(--purple); letter-spacing: 0.08em;
     }
     .sidebar-close {
-      width: 32px; height: 32px;
-      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
       background: none; border: none; cursor: pointer;
-      color: rgba(240,237,230,0.4); font-size: 0.9rem;
-      border-radius: 50%;
+      color: var(--text2); font-size: 0.9rem; border-radius: 50%;
       transition: background 0.2s, color 0.2s;
-      font-family: 'Inter', sans-serif;
     }
-    .sidebar-close:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
-    .sidebar-nav {
-      padding: 0.75rem 0.6rem;
-      flex: 1;
-      display: flex; flex-direction: column; gap: 2px;
-    }
+    .sidebar-close:hover { background: rgba(239,68,68,0.15); color: var(--red); }
+
+    .sidebar-nav { padding: 0.75rem 0.6rem; flex: 1; display: flex; flex-direction: column; gap: 2px; }
     .sidebar-link {
       display: flex; align-items: center; gap: 0.85rem;
-      padding: 0.75rem 0.9rem;
-      border-radius: 8px;
-      text-decoration: none;
-      color: rgba(240,237,230,0.5);
-      font-family: 'Inter', sans-serif;
+      padding: 0.75rem 0.9rem; border-radius: 8px;
+      text-decoration: none; color: var(--text2);
       font-size: 0.875rem; font-weight: 500;
       transition: background 0.15s, color 0.15s;
     }
-    .sidebar-link:hover { background: rgba(200,255,0,0.06); color: var(--white); }
-    .sidebar-link.active { background: rgba(200,255,0,0.08); color: var(--lime); }
+    .sidebar-link:hover { background: var(--purple-dim); color: var(--text); }
+    .sidebar-link.active { background: rgba(139,92,246,0.15); color: var(--purple); }
     .sidebar-link-icon { font-size: 1.05rem; width: 22px; text-align: center; }
-    .sidebar-footer {
-      padding: 1rem 1.2rem;
-      border-top: 1px solid #1e1e35;
-    }
+
+    .sidebar-footer { padding: 1rem 1.2rem; border-top: 1px solid var(--border); }
     .sidebar-version {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.6rem;
-      color: rgba(240,237,230,0.2);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+      font-size: 0.6rem; color: var(--text3);
+      letter-spacing: 0.1em; text-transform: uppercase;
     }
 
-    /* MAIN */
+    /* ── MAIN ── */
     main {
-      position: relative;
-      z-index: 1;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 5rem 2rem 4rem;
+      position: relative; z-index: 1;
+      max-width: 640px; margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
     }
 
-    /* BIG TITLE */
-    .title-block {
-      margin-bottom: 5rem;
+    /* ── GREETING ── */
+    .greeting {
+      margin-bottom: 2.5rem;
+    }
+    .greeting-time {
+      font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 0.4rem;
+    }
+    .greeting-head {
+      font-size: 1.6rem; font-weight: 800;
+      line-height: 1.2; color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    .greeting-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem; color: var(--text2);
     }
 
-    .title-kicker {
-      font-size: 0.65rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: rgba(240,237,230,0.25);
-      margin-bottom: 1.5rem;
-    }
-
-    h1 {
-      font-family: 'Unbounded', sans-serif;
-      font-size: clamp(3rem, 9vw, 9rem);
-      font-weight: 900;
-      line-height: 0.92;
-      letter-spacing: -0.03em;
-    }
-
-    h1 .w1 { color: var(--white); display: block; }
-    h1 .w2 {
-      display: block;
-      color: transparent;
-      -webkit-text-stroke: 2px var(--pink);
-      animation: stroke-drift 6s ease-in-out infinite alternate;
-    }
-    h1 .w3 { display: block; color: var(--lime); }
-
-    @keyframes stroke-drift {
-      from { -webkit-text-stroke-color: var(--pink); }
-      to { -webkit-text-stroke-color: var(--purple); }
-    }
-
-    /* PROJECTS */
-    .section-header {
-      display: flex;
-      align-items: baseline;
-      gap: 1.5rem;
+    /* ── MODULE GRID ── */
+    .modules {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
       margin-bottom: 2rem;
     }
 
-    .section-header h2 {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(240,237,230,0.2);
-    }
-
-    .section-header::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(240,237,230,0.06);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1px;
-      background: rgba(240,237,230,0.05);
-      border: 1px solid rgba(240,237,230,0.05);
-    }
-
-    .card {
-      background: var(--bg);
-      padding: 2rem;
-      text-decoration: none;
-      color: inherit;
-      display: block;
+    .module-tile {
+      display: flex; flex-direction: column;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      text-decoration: none; color: inherit;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      min-height: 148px;
       position: relative;
       overflow: hidden;
-      transition: background 0.25s;
-      min-height: 220px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
+    .module-tile:hover {
+      border-color: var(--tile-color);
+      background: var(--tile-dim);
+      transform: translateY(-2px);
+    }
+    .module-tile:active { transform: translateY(0); }
 
-    .card::after {
+    /* Subtle corner glow on hover */
+    .module-tile::after {
       content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--card-color, var(--lime));
-      opacity: 0;
-      transition: opacity 0.3s;
+      position: absolute; top: 0; right: 0;
+      width: 80px; height: 80px;
+      background: radial-gradient(circle at top right, var(--tile-color), transparent 70%);
+      opacity: 0; transition: opacity 0.3s;
+      border-radius: 0 16px 0 0;
+    }
+    .module-tile:hover::after { opacity: 0.12; }
+
+    .tile-icon {
+      font-size: 1.5rem; margin-bottom: auto;
+    }
+    .tile-body { margin-top: 1rem; }
+    .tile-name {
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--text); margin-bottom: 0.3rem;
+    }
+    .tile-stat {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; color: var(--text2);
+      line-height: 1.4;
+    }
+    .tile-stat.highlight {
+      color: var(--tile-color);
+      font-weight: 500;
+    }
+    .tile-stat.dim { color: var(--text3); }
+
+    /* ── QUICK STATUS BAR ── */
+    .status-bar {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .status-chip {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 99px; padding: 0.35rem 0.75rem;
+      font-size: 0.65rem; color: var(--text2);
+    }
+    .status-chip-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0;
+      animation: blink 2.5s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+    /* ── SECTION DIVIDER ── */
+    .section-divider {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .section-divider-label {
+      font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text3); white-space: nowrap;
+    }
+    .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
     }
 
-    .card:hover { background: #0f0f0f; }
-    .card:hover::after { opacity: 0.03; }
-
-    .card-top {}
-
-    .card-num {
-      font-size: 0.55rem;
-      letter-spacing: 0.2em;
-      color: rgba(240,237,230,0.15);
-      margin-bottom: 1.2rem;
+    /* ── RECENTS STRIP ── */
+    .recents {
+      display: flex; flex-direction: column; gap: 0.5rem;
     }
-
-    .card-title {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      line-height: 1.3;
-      margin-bottom: 0.8rem;
+    .recent-item {
+      display: flex; align-items: center; gap: 0.85rem;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.75rem 1rem;
+      text-decoration: none; color: inherit;
+      transition: border-color 0.2s;
+      font-size: 0.82rem;
     }
-
-    .card-desc {
-      font-size: 0.72rem;
-      line-height: 1.9;
-      color: rgba(240,237,230,0.4);
+    .recent-item:hover { border-color: var(--text3); }
+    .recent-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .recent-label { color: var(--text2); flex: 1; }
+    .recent-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; color: var(--text2);
     }
+    .recent-arrow { font-size: 0.75rem; color: var(--text3); margin-left: 0.25rem; }
 
-    .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 1.5rem;
-    }
-
-    .card-tag {
-      font-size: 0.55rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      padding: 0.25rem 0.7rem;
-      border: 1px solid currentColor;
-      opacity: 0.5;
-    }
-
-    .card-arrow {
-      font-size: 0.8rem;
-      opacity: 0;
-      transform: translateX(-8px);
-      transition: all 0.25s;
-      color: var(--card-color, var(--lime));
-    }
-
-    .card:hover .card-arrow {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    .card:hover .card-title {
-      color: var(--card-color, var(--lime));
-      transition: color 0.25s;
-    }
-
-    /* Status dot */
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 6px;
-      background: var(--card-color, var(--lime));
-    }
-
-    .status-dot.live { animation: pulse 2s ease-in-out infinite; }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    .card-status {
-      font-size: 0.55rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: rgba(240,237,230,0.3);
-      display: flex;
-      align-items: center;
-    }
-
-    /* FOOTER */
-    footer {
-      position: relative;
-      z-index: 1;
-      padding: 3rem 2rem;
-      border-top: 1px solid rgba(240,237,230,0.05);
-      max-width: 1100px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .footer-text {
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      color: rgba(240,237,230,0.15);
+    /* ── RESPONSIVE ── */
+    @media (max-width: 360px) {
+      .modules { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -406,7 +312,7 @@
   <!-- Sidebar overlay -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <!-- Slide-in sidebar drawer -->
+  <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">
@@ -417,20 +323,19 @@
     </div>
     <nav class="sidebar-nav">
       <a class="sidebar-link active" href="index.html">
-        <span class="sidebar-link-icon">🏠</span>
-        <span>Projects</span>
+        <span class="sidebar-link-icon">🏠</span><span>Home</span>
       </a>
       <a class="sidebar-link" href="mission-control.html">
-        <span class="sidebar-link-icon">📊</span>
-        <span>Mission Control</span>
+        <span class="sidebar-link-icon">📊</span><span>Mission Control</span>
       </a>
       <a class="sidebar-link" href="journal.html">
-        <span class="sidebar-link-icon">📓</span>
-        <span>Journal</span>
+        <span class="sidebar-link-icon">📓</span><span>Journal</span>
       </a>
       <a class="sidebar-link" href="feelings.html">
-        <span class="sidebar-link-icon">🫀</span>
-        <span>Feelings</span>
+        <span class="sidebar-link-icon">🫀</span><span>Feelings</span>
+      </a>
+      <a class="sidebar-link" href="habits.html">
+        <span class="sidebar-link-icon">✅</span><span>Habits</span>
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -438,7 +343,7 @@
     </div>
   </aside>
 
-  <!-- Top app bar -->
+  <!-- Top nav -->
   <nav class="app-nav">
     <button class="hamburger" id="hamburgerBtn" onclick="openSidebar()" aria-label="Open menu">
       <span></span><span></span><span></span>
@@ -448,84 +353,96 @@
   </nav>
 
   <main>
-    <div class="title-block">
-      <p class="title-kicker">mandysprojects.online</p>
-      <h1>
-        <span class="w1">STUFF</span>
-        <span class="w2">I</span>
-        <span class="w3">BUILT.</span>
-      </h1>
+
+    <!-- Greeting -->
+    <div class="greeting">
+      <div class="greeting-time" id="greetingTime"></div>
+      <div class="greeting-head" id="greetingHead">Hello 👋</div>
+      <div class="greeting-date" id="greetingDate"></div>
     </div>
 
-    <div class="section-header">
-      <h2>Projects</h2>
+    <!-- Status chips -->
+    <div class="status-bar">
+      <div class="status-chip">
+        <div class="status-chip-dot"></div>
+        <span>All systems local</span>
+      </div>
+      <div class="status-chip" id="chipHabits" style="display:none">
+        <span id="chipHabitsText"></span>
+      </div>
     </div>
 
-    <div class="grid">
+    <!-- Module tiles -->
+    <div class="section-divider"><span class="section-divider-label">Modules</span></div>
+    <div class="modules">
 
-      <a class="card" href="mission-control.html" style="--card-color: #b44fff">
-        <div class="card-top">
-          <div class="card-num">001</div>
-          <div class="card-title">Mission Control</div>
-          <div class="card-desc">Personal finance dashboard. 28-day pay cycle tracker, spending heatmaps, survival mode, and a calculator that tells you if you can afford things. Spoiler: usually no.</div>
-        </div>
-        <div class="card-footer">
-          <div>
-            <span class="card-status"><span class="status-dot live"></span>Live</span>
-          </div>
-          <span class="card-tag" style="color: #b44fff">Finance</span>
-          <span class="card-arrow">→</span>
+      <a class="module-tile" href="mission-control.html"
+         style="--tile-color:#8b5cf6; --tile-dim:rgba(139,92,246,0.07)">
+        <span class="tile-icon">📊</span>
+        <div class="tile-body">
+          <div class="tile-name">Mission Control</div>
+          <div class="tile-stat" id="mcStat">Finance</div>
         </div>
       </a>
 
-      <div class="card" style="--card-color: var(--pink); cursor: default;">
-        <div class="card-top">
-          <div class="card-num">002</div>
-          <div class="card-title">Fanfic Toolkit</div>
-          <div class="card-desc">Python tools for organising, tagging, and wrangling fanfiction. Because AO3's search is a crime against humanity.</div>
-        </div>
-        <div class="card-footer">
-          <span class="card-status"><span class="status-dot" style="background:rgba(240,237,230,0.2); animation:none"></span>In Progress</span>
-          <span class="card-tag" style="color: var(--pink)">Python</span>
-        </div>
-      </div>
-
-      <a class="card" href="journal.html" style="--card-color: var(--cyan)">
-        <div class="card-top">
-          <div class="card-num">003</div>
-          <div class="card-title">Journal Insight Engine</div>
-          <div class="card-desc">Pattern recognition across journal entries and notes. Spots emotional themes, cognitive patterns, and gives therapy suggestions. Finding the threads you didn't know were there.</div>
-        </div>
-        <div class="card-footer">
-          <div>
-            <span class="card-status"><span class="status-dot live" style="background: var(--cyan)"></span>Live</span>
-          </div>
-          <span class="card-tag" style="color: var(--cyan)">AI</span>
-          <span class="card-arrow">→</span>
+      <a class="module-tile" href="journal.html"
+         style="--tile-color:#14b8a6; --tile-dim:rgba(20,184,166,0.07)">
+        <span class="tile-icon">📓</span>
+        <div class="tile-body">
+          <div class="tile-name">Journal</div>
+          <div class="tile-stat" id="journalStat">Insight engine</div>
         </div>
       </a>
 
-      <div class="card" style="--card-color: var(--orange); cursor: default;">
-        <div class="card-top">
-          <div class="card-num">???</div>
-          <div class="card-title">Whatever's Next</div>
-          <div class="card-desc">No idea yet. Check back when the ADHD hyperfocus lands somewhere interesting.</div>
+      <a class="module-tile" href="feelings.html"
+         style="--tile-color:#ec4899; --tile-dim:rgba(236,72,153,0.07)">
+        <span class="tile-icon">🫀</span>
+        <div class="tile-body">
+          <div class="tile-name">Feelings</div>
+          <div class="tile-stat" id="feelingsStat">Emotion tracker</div>
         </div>
-        <div class="card-footer">
-          <span class="card-status"><span class="status-dot" style="background:rgba(240,237,230,0.2); animation:none"></span>Unknown</span>
-          <span class="card-tag" style="color: var(--orange)">???</span>
+      </a>
+
+      <a class="module-tile" href="habits.html"
+         style="--tile-color:#22c55e; --tile-dim:rgba(34,197,94,0.07)">
+        <span class="tile-icon">✅</span>
+        <div class="tile-body">
+          <div class="tile-name">Habits</div>
+          <div class="tile-stat" id="habitsStat">Habit tracker</div>
         </div>
-      </div>
+      </a>
 
     </div>
+
+    <!-- Quick recents -->
+    <div class="section-divider" style="margin-top:1.5rem"><span class="section-divider-label">Quick links</span></div>
+    <div class="recents">
+      <a class="recent-item" href="mission-control.html">
+        <span class="recent-icon">💰</span>
+        <span class="recent-label">Add transaction</span>
+        <span class="recent-arrow">→</span>
+      </a>
+      <a class="recent-item" href="feelings.html">
+        <span class="recent-icon">🫀</span>
+        <span class="recent-label">Log how you feel</span>
+        <span class="recent-arrow">→</span>
+      </a>
+      <a class="recent-item" href="habits.html">
+        <span class="recent-icon">✅</span>
+        <span class="recent-label">Check habits for today</span>
+        <span class="recent-arrow">→</span>
+      </a>
+      <a class="recent-item" href="journal.html">
+        <span class="recent-icon">✏️</span>
+        <span class="recent-label">Write a journal entry</span>
+        <span class="recent-arrow">→</span>
+      </a>
+    </div>
+
   </main>
 
-  <footer>
-    <span class="footer-text">mandysprojects.online</span>
-    <span class="footer-text">Built with chaos. Data stays in your browser.</span>
-  </footer>
-
   <script>
+    // ── Sidebar
     function openSidebar() {
       document.getElementById('sidebar').classList.add('open');
       document.getElementById('sidebarOverlay').classList.add('visible');
@@ -539,6 +456,87 @@
       document.body.style.overflow = '';
     }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
+    // ── Greeting
+    (function() {
+      const now  = new Date();
+      const h    = now.getHours();
+      const part = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+      const emoji = h < 12 ? '☀️' : h < 17 ? '🌤️' : '🌙';
+
+      document.getElementById('greetingTime').textContent = part.toUpperCase();
+      document.getElementById('greetingHead').textContent = `Good ${part} ${emoji}`;
+      document.getElementById('greetingDate').textContent = now.toLocaleDateString('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      });
+    })();
+
+    // ── Live stats from localStorage
+    (function() {
+      const today = new Date().toISOString().slice(0, 10);
+
+      // Mission Control
+      try {
+        const mc = JSON.parse(localStorage.getItem('missionControl') || '{}');
+        const el = document.getElementById('mcStat');
+        if (mc.availableBalance != null && mc.availableBalance !== 0) {
+          el.textContent = '£' + Number(mc.availableBalance).toFixed(2) + ' available';
+          el.classList.add('highlight');
+        } else if (mc.transactions && mc.transactions.length) {
+          el.textContent = mc.transactions.length + ' transactions';
+        }
+      } catch(e) {}
+
+      // Journal
+      try {
+        const entries = JSON.parse(localStorage.getItem('jie_entries') || '[]');
+        const el = document.getElementById('journalStat');
+        if (entries.length) {
+          const last = new Date(entries[0].date || entries[0].createdAt || Date.now());
+          const daysAgo = Math.floor((Date.now() - last) / 86400000);
+          const when = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + 'd ago';
+          el.textContent = entries.length + ' entries · last ' + when;
+          el.classList.add('highlight');
+        }
+      } catch(e) {}
+
+      // Feelings
+      try {
+        const checkin = JSON.parse(localStorage.getItem('mc_feeling_checkin') || 'null');
+        const el = document.getElementById('feelingsStat');
+        if (checkin) {
+          const isToday = checkin.date === today || (checkin.timestamp && checkin.timestamp.slice(0,10) === today);
+          const label = checkin.refined || checkin.core || checkin.label || '';
+          const emoji = checkin.emoji || checkin.icon || '';
+          if (label || emoji) {
+            el.textContent = isToday ? 'Today: ' + emoji + ' ' + label : 'Last: ' + emoji + ' ' + label;
+            el.classList.add('highlight');
+          }
+        }
+      } catch(e) {}
+
+      // Habits
+      try {
+        const habits = JSON.parse(localStorage.getItem('mc_habits') || '[]');
+        const log    = JSON.parse(localStorage.getItem('mc_habits_log') || '{}');
+        const el = document.getElementById('habitsStat');
+        const chip = document.getElementById('chipHabits');
+        const chipText = document.getElementById('chipHabitsText');
+
+        if (habits.length) {
+          const todayLog = log[today] || {};
+          const done  = habits.filter(h => todayLog[h.id]).length;
+          const total = habits.length;
+          const pct   = Math.round((done / total) * 100);
+
+          el.textContent = done + '/' + total + ' done today';
+          el.classList.add('highlight');
+
+          chip.style.display = 'flex';
+          chipText.textContent = pct + '% habits done';
+        }
+      } catch(e) {}
+    })();
   </script>
 </body>
 </html>

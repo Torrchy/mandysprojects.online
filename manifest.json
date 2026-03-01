@@ -1,14 +1,14 @@
 {
-    "name": "Mission Control",
-    "short_name": "MsnCtrl",
-    "description": "Personal finance dashboard — 28-day pay cycle tracker",
-    "start_url": "./mission-control.html",
+    "name": "Mandy's Projects",
+    "short_name": "MP·",
+    "description": "Life all in one — finance, journal, feelings, habits",
+    "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",
     "background_color": "#07070f",
     "theme_color": "#8b5cf6",
     "orientation": "any",
-    "categories": ["finance", "productivity", "utilities"],
+    "categories": ["finance", "productivity", "utilities", "lifestyle"],
     "icons": [
         {
             "src": "icon-192.png",

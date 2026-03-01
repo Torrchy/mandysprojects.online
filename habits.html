@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <meta name="theme-color" content="#8b5cf6">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -89,6 +90,16 @@
       cursor: pointer; transition: opacity 0.2s; flex-shrink: 0;
     }
     .nav-add-btn:hover { opacity: 0.85; }
+
+    .nav-import-btn {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+      color: var(--text-secondary); font-size: 1rem;
+      cursor: pointer; transition: border-color 0.2s, color 0.2s; flex-shrink: 0;
+    }
+    .nav-import-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+    .nav-right-group { display: flex; align-items: center; gap: 0.4rem; }
 
     /* ══════════════════ SIDEBAR ══════════════════ */
     .sidebar-overlay {
@@ -275,6 +286,51 @@
       cursor: default; user-select: none;
       position: relative; overflow: hidden;
     }
+    /* Swipe overlay backgrounds */
+    .swipe-bg {
+      position: absolute; inset: 0; z-index: 0;
+      display: flex; align-items: center;
+      padding: 0 1.25rem;
+      font-size: 0.78rem; font-weight: 700;
+      opacity: 0; pointer-events: none;
+    }
+    .swipe-bg-right {
+      background: linear-gradient(to left, rgba(34,197,94,0.28) 0%, transparent 70%);
+      color: var(--accent-green); justify-content: flex-end;
+    }
+    .swipe-bg-left {
+      background: linear-gradient(to right, rgba(239,68,68,0.28) 0%, transparent 70%);
+      color: #ef4444; justify-content: flex-start;
+    }
+    /* Lift real card content above swipe bgs */
+    .habit-card .habit-check,
+    .habit-card .habit-info,
+    .habit-card .habit-right { position: relative; z-index: 1; }
+
+    /* Missed state */
+    .habit-card.missed-card {
+      border-color: rgba(239,68,68,0.35);
+      opacity: 0.68;
+    }
+    .habit-card.missed-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(239,68,68,0.04); pointer-events: none;
+    }
+    .missed-card .habit-name { color: var(--text-muted); }
+
+    /* Toast notification */
+    .import-toast {
+      position: fixed; bottom: calc(var(--bnav-h) + 1rem); left: 50%;
+      transform: translateX(-50%) translateY(0.75rem);
+      background: var(--bg-card); border: 1px solid var(--accent-green);
+      color: var(--accent-green); font-size: 0.82rem; font-weight: 600;
+      padding: 0.6rem 1.4rem; border-radius: 100px;
+      z-index: 9999; opacity: 0; transition: opacity 0.3s, transform 0.3s;
+      white-space: nowrap; pointer-events: none;
+    }
+    .import-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
     .habit-card.done-card {
       border-color: var(--done-color, var(--accent-purple));
       opacity: 0.72;
@@ -684,8 +740,11 @@
     <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close">✕</button>
   </div>
   <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html">
+      <span class="sidebar-link-icon">🏠</span> Home
+    </a>
     <a class="sidebar-link" href="mission-control.html">
-      <span class="sidebar-link-icon">📊</span> Dashboard
+      <span class="sidebar-link-icon">📊</span> Mission Control
     </a>
     <a class="sidebar-link" href="journal.html">
       <span class="sidebar-link-icon">📓</span> Journal
@@ -708,7 +767,11 @@
     <span></span><span></span><span></span>
   </button>
   <span class="app-nav-title">Habits</span>
-  <button class="nav-add-btn" onclick="openModal()" aria-label="Add habit" title="New habit">+</button>
+  <div class="nav-right-group">
+    <button class="nav-import-btn" onclick="document.getElementById('ticktickInput').click()" title="Import from TickTick (.xlsx)">⬆</button>
+    <button class="nav-add-btn" onclick="openModal()" aria-label="Add habit" title="New habit">+</button>
+  </div>
+  <input type="file" id="ticktickInput" accept=".xlsx" style="display:none" onchange="importTickTick(this)">
 </nav>
 
 <!-- ══════════ PANEL CONTAINER ══════════ -->
@@ -852,8 +915,9 @@
 // ══════════════════════════════════════════════
 //  CONSTANTS
 // ══════════════════════════════════════════════
-const HABITS_KEY = 'mc_habits';
-const LOG_KEY    = 'mc_habits_log';
+const HABITS_KEY  = 'mc_habits';
+const LOG_KEY     = 'mc_habits_log';
+const MISSED_KEY  = 'mc_habits_missed';
 
 const ICONS = [
   '🏃','🚴','🏊','💪','🧘','🤸','🚶','🧗','⚽','🏋️',
@@ -880,6 +944,7 @@ const TAGLINES = {
 // ══════════════════════════════════════════════
 let habits      = [];
 let log         = {};   // { 'YYYY-MM-DD': [id, ...] }
+let missed      = {};   // { 'YYYY-MM-DD': [id, ...] }
 let editingId   = null;
 let selectedIcon  = ICONS[0];
 let selectedColor = COLORS[0];
@@ -915,12 +980,14 @@ function escHTML(s) {
 //  STORAGE
 // ══════════════════════════════════════════════
 function loadData() {
-  try { habits = JSON.parse(localStorage.getItem(HABITS_KEY) || '[]'); } catch(e) { habits = []; }
-  try { log    = JSON.parse(localStorage.getItem(LOG_KEY)    || '{}'); } catch(e) { log = {}; }
+  try { habits = JSON.parse(localStorage.getItem(HABITS_KEY)  || '[]'); } catch(e) { habits = []; }
+  try { log    = JSON.parse(localStorage.getItem(LOG_KEY)     || '{}'); } catch(e) { log = {}; }
+  try { missed = JSON.parse(localStorage.getItem(MISSED_KEY)  || '{}'); } catch(e) { missed = {}; }
 }
 function saveData() {
-  localStorage.setItem(HABITS_KEY, JSON.stringify(habits));
-  localStorage.setItem(LOG_KEY,    JSON.stringify(log));
+  localStorage.setItem(HABITS_KEY,  JSON.stringify(habits));
+  localStorage.setItem(LOG_KEY,     JSON.stringify(log));
+  localStorage.setItem(MISSED_KEY,  JSON.stringify(missed));
 }
 
 // ══════════════════════════════════════════════
@@ -944,12 +1011,31 @@ function toggleDone(habitId) {
 function markDone(habitId) {
   const k = todayKey();
   if (!log[k]) log[k] = [];
+  // Remove from missed if present
+  if (missed[k]) { const i = missed[k].indexOf(habitId); if (i !== -1) missed[k].splice(i, 1); }
   if (!log[k].includes(habitId)) {
     log[k].push(habitId);
     saveData();
     renderHabits();
     scheduleNotifications();
   }
+}
+
+function isMissed(habitId, dk) {
+  return (missed[dk] || []).includes(habitId);
+}
+
+function markMissed(habitId) {
+  const k = todayKey();
+  if (!missed[k]) missed[k] = [];
+  // Remove from done if marked done
+  if (log[k]) { const i = log[k].indexOf(habitId); if (i !== -1) log[k].splice(i, 1); }
+  // Toggle missed
+  const idx = missed[k].indexOf(habitId);
+  if (idx === -1) missed[k].push(habitId);
+  else missed[k].splice(idx, 1);
+  saveData();
+  renderHabits();
 }
 
 function getStreak(habitId) {
@@ -1026,10 +1112,11 @@ function renderHabits() {
 
   const days = last7Days();
 
-  const pendingHabits = habits.filter(h => !isDone(h.id, today));
+  const pendingHabits = habits.filter(h => !isDone(h.id, today) && !isMissed(h.id, today));
+  const missedHabits  = habits.filter(h =>  isMissed(h.id, today) && !isDone(h.id, today));
   const doneHabits    = habits.filter(h =>  isDone(h.id, today));
 
-  function buildCard(habit, done) {
+  function buildCard(habit, done, missedToday) {
     const streak = getStreak(habit.id);
     const weekDots = days.map((dk, i) => {
       const isToday = i === 6;
@@ -1042,7 +1129,9 @@ function renderHabits() {
       : '';
 
     return `
-      <div class="habit-card ${done ? 'done-card' : ''}" style="--done-color:${habit.color}" data-id="${habit.id}">
+      <div class="habit-card ${done ? 'done-card' : ''} ${missedToday ? 'missed-card' : ''}" style="--done-color:${habit.color}" data-id="${habit.id}">
+        <div class="swipe-bg swipe-bg-right">✓ Done</div>
+        <div class="swipe-bg swipe-bg-left">✗ Missed</div>
         <div class="habit-check ${done ? 'done' : ''}" onclick="handleCheck('${habit.id}')" style="--done-color:${habit.color}">
           <svg viewBox="0 0 48 48">
             <circle class="habit-check-bg" cx="24" cy="24" r="20"/>
@@ -1068,19 +1157,30 @@ function renderHabits() {
       </div>`;
   }
 
-  pending.innerHTML = pendingHabits.map(h => buildCard(h, false)).join('');
+  pending.innerHTML = pendingHabits.map(h => buildCard(h, false, false)).join('');
 
+  let doneSectHTML = '';
+  if (missedHabits.length > 0) {
+    doneSectHTML += `
+      <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-text">✗ Missed today</div>
+        <div class="section-divider-line"></div>
+      </div>
+      ${missedHabits.map(h => buildCard(h, false, true)).join('')}`;
+  }
   if (doneHabits.length > 0) {
-    doneSect.innerHTML = `
+    doneSectHTML += `
       <div class="section-divider">
         <div class="section-divider-line"></div>
         <div class="section-divider-text">✓ Done today</div>
         <div class="section-divider-line"></div>
       </div>
-      ${doneHabits.map(h => buildCard(h, true)).join('')}`;
-  } else {
-    doneSect.innerHTML = '';
+      ${doneHabits.map(h => buildCard(h, true, false)).join('')}`;
   }
+  doneSect.innerHTML = doneSectHTML;
+
+  attachSwipeListeners();
 }
 
 function setTodayLabel() {
@@ -1526,6 +1626,205 @@ function handleURLComplete() {
     markDone(doneId);
     window.history.replaceState({}, '', './habits.html');
   }
+}
+
+// ══════════════════════════════════════════════
+//  SWIPE GESTURES
+// ══════════════════════════════════════════════
+function attachSwipeListeners() {
+  const THRESHOLD = 80;
+  document.querySelectorAll('.habit-card').forEach(card => {
+    if (card._swipeReady) return;
+    card._swipeReady = true;
+
+    let startX = 0, startY = 0, dx = 0, swiping = false, committed = false;
+    const bgRight = card.querySelector('.swipe-bg-right');
+    const bgLeft  = card.querySelector('.swipe-bg-left');
+
+    card.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dx = 0; swiping = false; committed = false;
+      card.style.transition = 'none';
+    }, { passive: true });
+
+    card.addEventListener('touchmove', e => {
+      const cx = e.touches[0].clientX;
+      const cy = e.touches[0].clientY;
+      const ddx = cx - startX;
+      const ddy = cy - startY;
+
+      if (!committed) {
+        if (Math.abs(ddx) < 6 && Math.abs(ddy) < 6) return;
+        if (Math.abs(ddy) > Math.abs(ddx)) return; // vertical scroll wins
+        committed = true;
+        swiping = true;
+      }
+      if (!swiping) return;
+      e.preventDefault();
+      dx = ddx;
+      card.style.transform = `translateX(${dx}px)`;
+      if (bgRight) bgRight.style.opacity = Math.max(0, Math.min(1, dx / THRESHOLD));
+      if (bgLeft)  bgLeft.style.opacity  = Math.max(0, Math.min(1, -dx / THRESHOLD));
+    }, { passive: false });
+
+    card.addEventListener('touchend', () => {
+      if (!swiping) { dx = 0; return; }
+      swiping = false; committed = false;
+      const habitId = card.dataset.id;
+      card.style.transition = 'transform 0.3s cubic-bezier(0.4,0,0.2,1)';
+      if (bgRight) bgRight.style.opacity = 0;
+      if (bgLeft)  bgLeft.style.opacity  = 0;
+
+      if (dx >= THRESHOLD) {
+        card.style.transform = 'translateX(110%)';
+        setTimeout(() => markDone(habitId), 280);
+      } else if (dx <= -THRESHOLD) {
+        card.style.transform = 'translateX(-110%)';
+        setTimeout(() => markMissed(habitId), 280);
+      } else {
+        card.style.transform = '';
+      }
+      dx = 0;
+    }, { passive: true });
+  });
+}
+
+// ══════════════════════════════════════════════
+//  TICKTICK IMPORT
+// ══════════════════════════════════════════════
+const ICON_MAP = [
+  { words: ['read', 'book', 'chapter'],              icon: '📚' },
+  { words: ['pill', 'medicine', 'medication', 'vitamin'], icon: '💊' },
+  { words: ['somatic', 'exercise', 'yoga', 'workout', 'meditat'], icon: '🧘' },
+  { words: ['clean', 'kitchen', 'wash', 'dishes'],   icon: '🫧' },
+  { words: ['shower', 'bath'],                        icon: '🚿' },
+  { words: ['run', 'jog', 'walk'],                    icon: '🏃' },
+  { words: ['sleep', 'bed'],                          icon: '😴' },
+  { words: ['water', 'drink'],                        icon: '💧' },
+  { words: ['journal', 'write', 'diary'],             icon: '✍️' },
+];
+function guessIcon(name) {
+  const lower = name.toLowerCase();
+  for (const { words, icon } of ICON_MAP) {
+    if (words.some(w => lower.includes(w))) return icon;
+  }
+  return '⭐';
+}
+
+function showToast(msg, isError) {
+  const el = document.createElement('div');
+  el.className = 'import-toast';
+  if (isError) el.style.borderColor = '#ef4444', el.style.color = '#ef4444';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.classList.add('show'), 10);
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 3500);
+}
+
+function parseTickTick(wb) {
+  const importedHabits = [];
+  const importedLog    = {};
+
+  wb.SheetNames.forEach((sheetName, idx) => {
+    const ws   = wb.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, dateNF: 'YYYY-MM-DD' });
+    if (!rows || rows.length < 2) return;
+
+    const infoBlock = rows[0] && rows[0][0] ? String(rows[0][0]) : '';
+    const nameMatch = infoBlock.match(/Habit Name:\s*([^\n\r]+)/i);
+    if (!nameMatch) return;
+    const habitName = nameMatch[1].trim();
+
+    const reminderMatch = infoBlock.match(/Reminder:\s*(\d{1,2}:\d{2})/);
+    const notifyTime = reminderMatch ? reminderMatch[1] : null;
+
+    const tempId = '__tt_' + idx;
+    importedHabits.push({
+      tempId, name: habitName,
+      icon: guessIcon(habitName),
+      color: COLORS[idx % COLORS.length],
+      notifyTime,
+    });
+
+    for (let r = 3; r < rows.length; r++) {
+      const row = rows[r];
+      if (!row || !row[0]) continue;
+      const rawDate = String(row[0]).trim();
+      const status  = row[2] ? String(row[2]).trim().toLowerCase() : '';
+      if (status !== 'completed') continue;
+
+      const dm = rawDate.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+      if (!dm) continue;
+      const dk = `${dm[1]}-${dm[2].padStart(2,'0')}-${dm[3].padStart(2,'0')}`;
+      if (!importedLog[dk]) importedLog[dk] = [];
+      if (!importedLog[dk].includes(tempId)) importedLog[dk].push(tempId);
+    }
+  });
+
+  return { importedHabits, importedLog };
+}
+
+function mergeImportedLog(importedLog, targetId, sourceId) {
+  Object.entries(importedLog).forEach(([dk, ids]) => {
+    if (ids.includes(sourceId)) {
+      if (!log[dk]) log[dk] = [];
+      if (!log[dk].includes(targetId)) log[dk].push(targetId);
+    }
+  });
+}
+
+function importTickTick(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+
+  if (typeof XLSX === 'undefined') {
+    showToast('⚠ XLSX library not ready. Try again.', true);
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+      const { importedHabits, importedLog } = parseTickTick(wb);
+
+      if (importedHabits.length === 0) {
+        showToast('⚠ No habits found in file.', true);
+        return;
+      }
+
+      let added = 0, updated = 0;
+      importedHabits.forEach(ih => {
+        const existing = habits.find(h => h.name.toLowerCase().trim() === ih.name.toLowerCase().trim());
+        if (existing) {
+          if (ih.notifyTime) existing.notifyTime = ih.notifyTime;
+          mergeImportedLog(importedLog, existing.id, ih.tempId);
+          updated++;
+        } else {
+          const newId = uid();
+          habits.push({
+            id: newId, name: ih.name, icon: ih.icon, color: ih.color,
+            notifyTime: ih.notifyTime, createdAt: new Date().toISOString(),
+            order: habits.length,
+          });
+          mergeImportedLog(importedLog, newId, ih.tempId);
+          added++;
+        }
+      });
+
+      saveData();
+      renderHabits();
+      scheduleNotifications();
+      const dayCount = Object.keys(importedLog).length;
+      showToast(`✓ ${added} new + ${updated} updated habits · ${dayCount} days history`);
+    } catch(err) {
+      console.error('TickTick import error:', err);
+      showToast('⚠ Error reading file: ' + err.message, true);
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 // ══════════════════════════════════════════════
