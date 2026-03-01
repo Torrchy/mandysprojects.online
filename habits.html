@@ -12,6 +12,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-sync.js"></script>
 
   <style>
     :root {
@@ -988,6 +993,9 @@ function saveData() {
   localStorage.setItem(HABITS_KEY,  JSON.stringify(habits));
   localStorage.setItem(LOG_KEY,     JSON.stringify(log));
   localStorage.setItem(MISSED_KEY,  JSON.stringify(missed));
+  if (window.fbUser && window.fbSaveDoc) {
+    window.fbSaveDoc('habits', { mc_habits: habits, mc_habits_log: log, mc_habits_missed: missed });
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1859,6 +1867,9 @@ function init() {
 }
 
 init();
+
+// Reload data + re-render after Firebase sync completes
+window.addEventListener('fbSyncComplete', () => { loadData(); renderHabits(); scheduleNotifications(); });
 </script>
 </body>
 </html>

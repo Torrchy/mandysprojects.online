@@ -12,6 +12,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MP·">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-sync.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -472,13 +477,14 @@
     })();
 
     // ── Live stats from localStorage
-    (function() {
+    function refreshStats() {
       const today = new Date().toISOString().slice(0, 10);
 
       // Mission Control
       try {
         const mc = JSON.parse(localStorage.getItem('missionControl') || '{}');
         const el = document.getElementById('mcStat');
+        el.classList.remove('highlight');
         if (mc.availableBalance != null && mc.availableBalance !== 0) {
           el.textContent = '£' + Number(mc.availableBalance).toFixed(2) + ' available';
           el.classList.add('highlight');
@@ -491,6 +497,7 @@
       try {
         const entries = JSON.parse(localStorage.getItem('jie_entries') || '[]');
         const el = document.getElementById('journalStat');
+        el.classList.remove('highlight');
         if (entries.length) {
           const last = new Date(entries[0].date || entries[0].createdAt || Date.now());
           const daysAgo = Math.floor((Date.now() - last) / 86400000);
@@ -504,6 +511,7 @@
       try {
         const checkin = JSON.parse(localStorage.getItem('mc_feeling_checkin') || 'null');
         const el = document.getElementById('feelingsStat');
+        el.classList.remove('highlight');
         if (checkin) {
           const isToday = checkin.date === today || (checkin.timestamp && checkin.timestamp.slice(0,10) === today);
           const label = checkin.refined || checkin.core || checkin.label || '';
@@ -522,21 +530,21 @@
         const el = document.getElementById('habitsStat');
         const chip = document.getElementById('chipHabits');
         const chipText = document.getElementById('chipHabitsText');
-
+        el.classList.remove('highlight');
         if (habits.length) {
-          const todayLog = log[today] || {};
-          const done  = habits.filter(h => todayLog[h.id]).length;
+          const todayDone = log[today] || [];
+          const done  = habits.filter(h => todayDone.includes(h.id)).length;
           const total = habits.length;
           const pct   = Math.round((done / total) * 100);
-
           el.textContent = done + '/' + total + ' done today';
           el.classList.add('highlight');
-
           chip.style.display = 'flex';
           chipText.textContent = pct + '% habits done';
         }
       } catch(e) {}
-    })();
+    }
+    refreshStats();
+    window.addEventListener('fbSyncComplete', refreshStats);
   </script>
 </body>
 </html>

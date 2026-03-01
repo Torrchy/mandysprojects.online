@@ -15,6 +15,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Mission Control">
     <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-sync.js"></script>
 </head>
 <body>
 
@@ -493,6 +498,8 @@
       }
       // Close sidebar on Escape key
       document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+      // Reload after Firebase sync (re-init app)
+      window.addEventListener('fbSyncComplete', () => { loadState(); renderAll(); });
     </script>
 </body>
 </html>
