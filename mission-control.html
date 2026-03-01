@@ -29,13 +29,40 @@
     </defs>
   </svg>
 
+  <!-- Sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Slide-in sidebar drawer -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="sidebar-logo-icon">🛸</span>
+        <span class="sidebar-logo-text">MC</span>
+      </div>
+      <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link active" href="mission-control.html">
+        <span class="sidebar-link-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a class="sidebar-link" href="journal.html">
+        <span class="sidebar-link-icon">📓</span>
+        <span>Journal</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="sidebar-version">Mission Control v17</span>
+    </div>
+  </aside>
+
+  <!-- Top app bar -->
   <nav class="mc-nav">
-    <a class="mc-nav-brand" href="index.html">← MP∙</a>
-    <ul class="mc-nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="mission-control.html" style="color: #8b5cf6">Mission Control</a></li>
-      <li><a href="journal.html">Journal</a></li>
-    </ul>
+    <button class="hamburger" id="hamburgerBtn" onclick="openSidebar()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="mc-nav-title">Mission Control</span>
+    <button class="nav-settings-btn" onclick="document.querySelector('.settings-panel').scrollIntoView({behavior:'smooth'})" aria-label="Settings">⚙</button>
   </nav>
 
     <div class="app">
@@ -439,5 +466,21 @@
     </div>
 
     <script src="app.js"></script>
+    <script>
+      function openSidebar() {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('sidebarOverlay').classList.add('visible');
+        document.getElementById('hamburgerBtn').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('visible');
+        document.getElementById('hamburgerBtn').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+      // Close sidebar on Escape key
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+    </script>
 </body>
 </html>
