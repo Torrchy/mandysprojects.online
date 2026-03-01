@@ -55,7 +55,7 @@
     _timers[docId] = setTimeout(async () => {
       try {
         _ownWrite[docId] = true; // flag: this snapshot comes from us, skip re-render
-        await db.doc(`users/${window.fbUser.uid}/${docId}`).set(data, { merge: true });
+        await db.doc(`users/${window.fbUser.uid}/modules/${docId}`).set(data, { merge: true });
         _showToast('☁ Synced');
       } catch (e) {
         console.error('[fbSync] Save error:', e);
@@ -67,7 +67,7 @@
   window.fbLoadDoc = async function (docId) {
     if (!window.fbUser) return null;
     try {
-      const snap = await db.doc(`users/${window.fbUser.uid}/${docId}`).get();
+      const snap = await db.doc(`users/${window.fbUser.uid}/modules/${docId}`).get();
       return snap.exists ? snap.data() : null;
     } catch (e) {
       console.error('[fbSync] Load error:', e);
@@ -97,7 +97,7 @@
     Object.values(_unsubscribers).forEach(fn => fn && fn());
 
     for (const [docId, keys] of Object.entries(MODULE_KEYS)) {
-      const ref = db.doc(`users/${user.uid}/${docId}`);
+      const ref = db.doc(`users/${user.uid}/modules/${docId}`);
 
       _unsubscribers[docId] = ref.onSnapshot(async (snap) => {
         // Ignore snapshots caused by our own pending local writes
