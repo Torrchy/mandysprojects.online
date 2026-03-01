@@ -23,6 +23,11 @@
   // ── Debounce timers (one per docId) ───────────────────────────────────────
   const _timers = {};
 
+  // ── Real-time listener state ───────────────────────────────────────────────
+  const _ownWrite     = {};   // tracks writes we initiated (so we don't re-render on our own save)
+  const _unsubscribers = {};  // Firestore onSnapshot unsubscribe functions
+  let   _syncTimer    = null; // debounce for fbSyncComplete dispatch
+
   // ── Public API ────────────────────────────────────────────────────────────
   window.fbSignIn = async function () {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -49,10 +54,12 @@
     clearTimeout(_timers[docId]);
     _timers[docId] = setTimeout(async () => {
       try {
+        _ownWrite[docId] = true; // flag: this snapshot comes from us, skip re-render
         await db.doc(`users/${window.fbUser.uid}/${docId}`).set(data, { merge: true });
         _showToast('☁ Synced');
       } catch (e) {
         console.error('[fbSync] Save error:', e);
+        _ownWrite[docId] = false;
       }
     }, 1500);
   };
@@ -76,19 +83,27 @@
     finance:  ['missionControl'],
   };
 
-  async function _syncAll(user) {
+  // Batch multiple rapid snapshot events into one fbSyncComplete dispatch
+  function _scheduleSyncComplete() {
+    clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('fbSyncComplete'));
+    }, 200);
+  }
+
+  // Set up real-time Firestore listeners for all docs (replaces one-shot get())
+  function _startListeners(user) {
+    // Cancel any existing listeners first
+    Object.values(_unsubscribers).forEach(fn => fn && fn());
+
     for (const [docId, keys] of Object.entries(MODULE_KEYS)) {
-      try {
-        const snap = await db.doc(`users/${user.uid}/${docId}`).get();
-        if (snap.exists) {
-          // Cloud wins → hydrate localStorage
-          const cloud = snap.data();
-          keys.forEach(key => {
-            if (cloud[key] !== undefined) {
-              localStorage.setItem(key, JSON.stringify(cloud[key]));
-            }
-          });
-        } else {
+      const ref = db.doc(`users/${user.uid}/${docId}`);
+
+      _unsubscribers[docId] = ref.onSnapshot(async (snap) => {
+        // Ignore snapshots caused by our own pending local writes
+        if (snap.metadata.hasPendingWrites) return;
+
+        if (!snap.exists) {
           // First-ever sign-in on this account → push local data up
           const upload = {};
           let hasData = false;
@@ -99,30 +114,43 @@
             }
           });
           if (hasData) {
-            await db.doc(`users/${user.uid}/${docId}`).set(upload, { merge: true });
+            _ownWrite[docId] = true;
+            await ref.set(upload, { merge: true });
           }
+          return;
         }
-      } catch (e) {
-        console.error('[fbSync] Sync error for', docId, ':', e);
-      }
+
+        // Hydrate localStorage from Firestore
+        const fromSelf = _ownWrite[docId];
+        _ownWrite[docId] = false;
+        const cloud = snap.data();
+        keys.forEach(key => {
+          if (cloud[key] !== undefined) {
+            localStorage.setItem(key, JSON.stringify(cloud[key]));
+          }
+        });
+
+        // Only re-render if data came from another device
+        if (!fromSelf) {
+          _scheduleSyncComplete();
+        }
+      }, (err) => {
+        console.error('[fbSync] Listener error for', docId, ':', err);
+      });
     }
-    // Tell each page to reload its data from localStorage
-    window.dispatchEvent(new CustomEvent('fbSyncComplete'));
   }
 
   // ── Auth state listener ───────────────────────────────────────────────────
-  auth.onAuthStateChanged(async (user) => {
+  auth.onAuthStateChanged((user) => {
     window.fbUser = user;
     _updateSidebarUI(user);
-    if (user) await _syncAll(user);
-    _authCallbacks.forEach(cb => cb(user));
-  });
-
-  // ── Visibility-based sync (re-pull when tab comes back into focus) ────────
-  document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'visible' && window.fbUser) {
-      await _syncAll(window.fbUser);
+    if (user) {
+      _startListeners(user);
+    } else {
+      // Cancel listeners on sign-out
+      Object.values(_unsubscribers).forEach(fn => fn && fn());
     }
+    _authCallbacks.forEach(cb => cb(user));
   });
 
   // ── Sidebar auth UI ───────────────────────────────────────────────────────
