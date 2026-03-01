@@ -673,6 +673,10 @@
       <span class="sidebar-link-icon">📓</span>
       <span>Journal</span>
     </a>
+    <a class="sidebar-link" href="feelings.html">
+      <span class="sidebar-link-icon">🫀</span>
+      <span>Feelings</span>
+    </a>
   </nav>
   <div class="sidebar-footer">
     <span class="sidebar-version">Journal Insight Engine</span>
@@ -707,6 +711,14 @@
   <!-- ENTRY CARD -->
   <div class="card">
     <div class="card-title">✍️ Today's Entry</div>
+    <!-- Feelings check-in banner (appears when returning from Feelings page) -->
+    <div id="feelingCheckinBanner" style="display:none;margin-bottom:1rem;padding:0.85rem 1rem;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;display:none;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div style="font-size:0.82rem;color:var(--text-primary)" id="feelingCheckinText">🫀 You identified a feeling</div>
+      <div style="display:flex;gap:0.5rem">
+        <button onclick="insertFeelingCheckin()" style="padding:0.4rem 0.85rem;border-radius:8px;border:none;background:var(--accent-purple);color:white;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Insert into entry</button>
+        <button onclick="dismissCheckin()" style="padding:0.4rem 0.75rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);font-size:0.75rem;cursor:pointer;font-family:'Inter',sans-serif">Dismiss</button>
+      </div>
+    </div>
     <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);font-weight:700;margin-bottom:0.6rem">How are you feeling right now? Pick all that apply</div>
     <div class="mood-grid" id="moodGrid"></div>
     <textarea class="journal-textarea" id="entryText"
@@ -1893,8 +1905,53 @@ function clearAllEntries() {
   document.getElementById('importStatus').textContent = 'All entries cleared.';
 }
 
+// ─── FEELINGS CHECK-IN INTEGRATION ─────────────────────────────────────────
+function checkFeelingCheckin() {
+  const raw = localStorage.getItem('mc_feeling_checkin');
+  if (!raw) return;
+  try {
+    const checkin = JSON.parse(raw);
+    const banner = document.getElementById('feelingCheckinBanner');
+    const text = document.getElementById('feelingCheckinText');
+    let label = `${checkin.icon} You identified: ${checkin.emotion}`;
+    if (checkin.sensations && checkin.sensations.length > 0) {
+      label += ` (${checkin.sensations.slice(0,3).join(', ')}${checkin.sensations.length > 3 ? '…' : ''})`;
+    }
+    text.textContent = label;
+    banner.style.display = 'flex';
+  } catch(e) {}
+}
+
+function insertFeelingCheckin() {
+  const raw = localStorage.getItem('mc_feeling_checkin');
+  if (!raw) return;
+  try {
+    const checkin = JSON.parse(raw);
+    const textarea = document.getElementById('entryText');
+    const ts = new Date(checkin.timestamp);
+    const timeStr = ts.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    let insert = `\n[Feeling check-in @ ${timeStr}]\nEmotion: ${checkin.icon} ${checkin.emotion}`;
+    if (checkin.sensations && checkin.sensations.length > 0) {
+      insert += `\nBody: ${checkin.sensations.join(', ')}`;
+    }
+    insert += '\n\n';
+    const pos = textarea.selectionStart || textarea.value.length;
+    textarea.value = textarea.value.slice(0, pos) + insert + textarea.value.slice(pos);
+    textarea.dispatchEvent(new Event('input'));
+    textarea.focus();
+    textarea.setSelectionRange(pos + insert.length, pos + insert.length);
+    dismissCheckin();
+  } catch(e) {}
+}
+
+function dismissCheckin() {
+  document.getElementById('feelingCheckinBanner').style.display = 'none';
+  localStorage.removeItem('mc_feeling_checkin');
+}
+
 // ─── GO ────────────────────────────────────────────────────────────────────
 init();
+checkFeelingCheckin();
 </script>
 <script>
   function openSidebar() {
