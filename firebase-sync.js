@@ -118,6 +118,13 @@
     _authCallbacks.forEach(cb => cb(user));
   });
 
+  // ── Visibility-based sync (re-pull when tab comes back into focus) ────────
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && window.fbUser) {
+      await _syncAll(window.fbUser);
+    }
+  });
+
   // ── Sidebar auth UI ───────────────────────────────────────────────────────
   function _injectStyles() {
     if (document.getElementById('fb-sync-css')) return;

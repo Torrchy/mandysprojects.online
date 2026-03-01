@@ -2,7 +2,7 @@
 // MISSION CONTROL — Service Worker v1.0
 // ============================================
 
-const CACHE_NAME = 'mission-control-v5';
+const CACHE_NAME = 'mission-control-v6';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -12,6 +12,8 @@ const STATIC_ASSETS = [
   './habits.html',
   './mc-style.css',
   './app.js',
+  './firebase-config.js',
+  './firebase-sync.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
