@@ -224,22 +224,126 @@
     main {
       position: relative;
       z-index: 1;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 5rem;
     }
 
-    .page-header { margin-bottom: 2rem; }
-    .page-header h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.25rem;
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(60px + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(7, 7, 15, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: stretch;
+      z-index: 100;
     }
-    .page-header .subtitle { color: var(--text-secondary); font-size: 0.9rem; }
+    .bnav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 6px 4px;
+      font-family: inherit;
+    }
+    .bnav-icon { font-size: 1.3rem; line-height: 1; }
+    .bnav-btn.active { color: var(--accent-purple); }
+    .bnav-btn.active .bnav-icon { filter: drop-shadow(0 0 6px rgba(139,92,246,0.5)); }
+
+    /* ── PANEL CONTAINER ── */
+    .journal-panels {
+      height: calc(100dvh - calc(56px + env(safe-area-inset-top)) - calc(60px + env(safe-area-inset-bottom)));
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── PANELS (shared) ── */
+    .journal-panel {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 1rem;
+      overscroll-behavior: contain;
+    }
+    .journal-panel.active { display: block; }
+
+    /* ── WRITE PANEL (flex column, textarea fills space) ── */
+    #panel-write {
+      display: none;
+      flex-direction: column;
+      gap: 0.65rem;
+      padding: 0.9rem 1rem;
+    }
+    #panel-write.active { display: flex; }
+
+    /* ── MOOD STRIP (horizontal scroll, no wrap) ── */
+    .mood-strip-label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .mood-strip {
+      display: flex;
+      gap: 0.4rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .mood-strip::-webkit-scrollbar { display: none; }
+    .mood-strip .mood-btn { flex-shrink: 0; white-space: nowrap; }
+
+    /* ── WRITE TEXTAREA (expands to fill) ── */
+    #panel-write .journal-textarea {
+      flex: 1;
+      min-height: 120px;
+      resize: none;
+    }
+
+    /* ── WRITE FOOTER ── */
+    .write-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── INSIGHT PANEL CARDS ── */
+    #panel-insights .card,
+    #panel-tools .card { margin-bottom: 1rem; }
+    #panel-insights .card:last-child,
+    #panel-tools .card:last-child { margin-bottom: 0.5rem; }
 
     /* ── CARD ── */
     .card {
@@ -644,10 +748,24 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 600px) {
-      main { padding: 1.25rem 1rem 3rem; }
-      .page-header h1 { font-size: 1.5rem; }
       .stat-num { font-size: 1.3rem; }
     }
+
+    /* ── CHECKIN BANNER ── */
+    .checkin-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      padding: 0.75rem 1rem;
+      background: rgba(139,92,246,0.08);
+      border: 1px solid rgba(139,92,246,0.25);
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .checkin-banner-text { font-size: 0.82rem; color: var(--text-primary); }
+    .checkin-banner-btns { display: flex; gap: 0.4rem; }
   </style>
 </head>
 <body>
@@ -693,265 +811,265 @@
 </nav>
 
 <main>
+<div class="journal-panels">
 
-  <!-- PAGE HEADER -->
-  <div class="page-header">
-    <h1>🧠 Journal Insight Engine</h1>
-    <p class="subtitle">Pattern recognition across your thoughts. Finding the threads you didn't know were there.</p>
-  </div>
+  <!-- ══ PANEL 1: WRITE ══ -->
+  <div id="panel-write" class="journal-panel">
 
-  <!-- STATS -->
-  <div class="stat-row" id="statsRow">
-    <div class="stat-box"><div class="stat-num" id="statEntries">0</div><div class="stat-label">Entries</div></div>
-    <div class="stat-box"><div class="stat-num" id="statStreak">0</div><div class="stat-label">Day Streak 🔥</div></div>
-    <div class="stat-box"><div class="stat-num" id="statMood">—</div><div class="stat-label">Top Mood</div></div>
-    <div class="stat-box"><div class="stat-num" id="statWords">0</div><div class="stat-label">Words Written</div></div>
-  </div>
-
-  <!-- ENTRY CARD -->
-  <div class="card">
-    <div class="card-title">✍️ Today's Entry</div>
-    <!-- Feelings check-in banner (appears when returning from Feelings page) -->
-    <div id="feelingCheckinBanner" style="display:none;margin-bottom:1rem;padding:0.85rem 1rem;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;display:none;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
-      <div style="font-size:0.82rem;color:var(--text-primary)" id="feelingCheckinText">🫀 You identified a feeling</div>
-      <div style="display:flex;gap:0.5rem">
-        <button onclick="insertFeelingCheckin()" style="padding:0.4rem 0.85rem;border-radius:8px;border:none;background:var(--accent-purple);color:white;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Insert into entry</button>
-        <button onclick="dismissCheckin()" style="padding:0.4rem 0.75rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);font-size:0.75rem;cursor:pointer;font-family:'Inter',sans-serif">Dismiss</button>
+    <!-- Feelings check-in banner -->
+    <div id="feelingCheckinBanner" class="checkin-banner" style="display:none">
+      <div class="checkin-banner-text" id="feelingCheckinText">🫀 You identified a feeling</div>
+      <div class="checkin-banner-btns">
+        <button class="btn btn-primary" style="padding:0.35rem 0.8rem;font-size:0.75rem" onclick="insertFeelingCheckin()">Insert</button>
+        <button class="btn btn-ghost" style="padding:0.35rem 0.75rem;font-size:0.75rem" onclick="dismissCheckin()">Dismiss</button>
       </div>
     </div>
-    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);font-weight:700;margin-bottom:0.6rem">How are you feeling right now? Pick all that apply</div>
-    <div class="mood-grid" id="moodGrid"></div>
+
+    <!-- Mood strip -->
+    <div>
+      <div class="mood-strip-label">How are you feeling? Pick all that apply</div>
+      <div class="mood-strip" id="moodGrid"></div>
+    </div>
+
+    <!-- Entry textarea -->
     <textarea class="journal-textarea" id="entryText"
       placeholder="What's on your mind? No filter needed. This is just for you. ✨"></textarea>
-    <div class="entry-footer">
+
+    <!-- Footer -->
+    <div class="write-footer">
       <span class="word-count" id="wordCount">0 words</span>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+      <div style="display:flex;gap:0.5rem">
         <button class="btn btn-ghost" onclick="clearEntry()">Clear</button>
-        <button class="btn btn-primary" id="saveBtn" onclick="saveEntry()">💾 Save Entry</button>
+        <button class="btn btn-primary" id="saveBtn" onclick="saveEntry()">💾 Save</button>
       </div>
     </div>
   </div>
 
-  <!-- ANALYSIS GRID -->
-  <div class="grid-3">
-    <div class="card" style="margin-bottom:0">
+  <!-- ══ PANEL 2: ENTRIES ══ -->
+  <div id="panel-entries" class="journal-panel">
+    <input class="search-input" type="search" id="entrySearch" placeholder="🔍  Search your entries..." oninput="renderHistory()" style="position:sticky;top:0;z-index:10;margin-bottom:0.75rem">
+    <div id="historyContent">
+      <div class="empty-state"><div class="icon">📖</div><p>Your entries live here. Start writing — even a few sentences counts.</p></div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL 3: TOOLS ══ -->
+  <div id="panel-tools" class="journal-panel">
+
+    <!-- THERAPY TOOLKIT -->
+    <div class="card">
+      <div class="card-title">💡 Therapy Toolkit</div>
+      <div id="therapyBanner" class="banner banner-purple" style="display:none">
+        <span>🤖</span><span id="therapyBannerText"></span>
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('techniques',this)">Techniques</button>
+        <button class="tab-btn" onclick="switchTab('cbt',this)">CBT</button>
+        <button class="tab-btn" onclick="switchTab('grounding',this)">Grounding</button>
+        <button class="tab-btn" onclick="switchTab('prompts',this)">Prompts</button>
+      </div>
+
+      <div id="tab-techniques"><div id="techniquesList"></div></div>
+
+      <div id="tab-cbt" style="display:none">
+        <div class="banner banner-purple" style="margin-bottom:1rem">
+          <span>📝</span>
+          <span>A thought record helps you catch, examine, and gently reframe unhelpful thinking. Fill in as much or as little as feels useful.</span>
+        </div>
+        <div id="cbtFields">
+          <div class="tr-field"><label>Situation — What happened?</label><textarea rows="2" placeholder="e.g. I sent an email and got a delayed reply..."></textarea></div>
+          <div class="tr-field"><label>Automatic Thought — What went through your mind?</label><textarea rows="2" placeholder="e.g. They must think I'm useless..."></textarea></div>
+          <div class="tr-field"><label>Emotion — What did you feel? (Rate 0–100%)</label><textarea rows="1" placeholder="e.g. Anxious 80%, Shame 60%..."></textarea></div>
+          <div class="tr-field"><label>Evidence FOR the thought</label><textarea rows="2" placeholder="e.g. The reply was late..."></textarea></div>
+          <div class="tr-field"><label>Evidence AGAINST the thought</label><textarea rows="2" placeholder="e.g. They always reply late. Busy week..."></textarea></div>
+          <div class="tr-field"><label>Alternative / Balanced Thought</label><textarea rows="2" placeholder="e.g. Many reasons for a delayed reply..."></textarea></div>
+          <div class="tr-field"><label>How do you feel now? Re-rate</label><textarea rows="1" placeholder="e.g. Anxious 35%, more grounded..."></textarea></div>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveCBTRecord()">💾 Save to Journal</button>
+          <button class="btn btn-ghost" onclick="clearCBT()">Clear</button>
+        </div>
+      </div>
+
+      <div id="tab-grounding" style="display:none">
+        <div class="banner banner-amber" style="margin-bottom:1rem">
+          <span>⚡</span>
+          <span>Use these when you feel overwhelmed, anxious, or disconnected. They work best when you actually <em>do</em> them.</span>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">🫁 Box Breathing (4-4-4-4)</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Activates your parasympathetic nervous system to slow your heart rate. Works in minutes.</p>
+            <ul class="technique-steps">
+              <li>Breathe IN for 4 counts (belly, not chest)</li>
+              <li>HOLD for 4 counts</li>
+              <li>Breathe OUT slowly for 4 counts</li>
+              <li>HOLD for 4 counts. Repeat 4–6 times.</li>
+            </ul>
+            <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="startBreath(event)">▶ Start guided timer</button>
+            <div id="boxBreathTimer" style="display:none">
+              <div id="breathPhase">IN</div>
+              <div id="breathCount">4</div>
+              <div class="breath-track"><div id="breathBar"></div></div>
+              <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="stopBreath(event)">⏹ Stop</button>
+            </div>
+          </div>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">👁️ 5-4-3-2-1 Grounding</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Brings you back to the present by engaging all five senses. Excellent for dissociation, spiralling thoughts, or panic.</p>
+            <ul class="technique-steps">
+              <li>Name <strong>5 things</strong> you can SEE</li>
+              <li>Name <strong>4 things</strong> you can TOUCH</li>
+              <li>Name <strong>3 things</strong> you can HEAR</li>
+              <li>Name <strong>2 things</strong> you can SMELL</li>
+              <li>Name <strong>1 thing</strong> you can TASTE</li>
+            </ul>
+            <p style="margin-top:0.5rem">Say them out loud if you can.</p>
+          </div>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">🧊 Cold Water Reset</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Based on the mammalian diving reflex — cold water on your face rapidly slows your heart rate.</p>
+            <ul class="technique-steps">
+              <li>Splash cold water on your face 3–5 times</li>
+              <li>Or hold your wrists under cold water for 30 seconds</li>
+              <li>Breathe slowly while you do it</li>
+            </ul>
+          </div>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">🦶 Body Scan</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Pulls attention from anxious thoughts into physical sensation. Great for dissociation or unnoticed tension.</p>
+            <ul class="technique-steps">
+              <li>Sit or lie comfortably. Close your eyes.</li>
+              <li>Start at your crown — notice any tension</li>
+              <li>Move slowly down: forehead, jaw, neck, shoulders</li>
+              <li>Chest, stomach, arms, hands, hips, legs, feet</li>
+              <li>Breathe into tension. Let it soften on the exhale.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">🏡 Safe Place Visualisation</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Your brain responds to vividly imagined safety almost like real safety. Build this slowly — it becomes a refuge.</p>
+            <ul class="technique-steps">
+              <li>Close your eyes. Breathe slowly.</li>
+              <li>Imagine a place where you feel completely safe — real or invented</li>
+              <li>Notice colours, light, temperature, sounds, smells</li>
+              <li>Spend 2–5 minutes there. Let your body relax.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-prompts" style="display:none">
+        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:1rem;line-height:1.6">Sometimes the blank page is the hardest part. Tap any prompt to write from it.</p>
+        <div id="promptsList"></div>
+        <button class="btn btn-ghost" style="margin-top:0.75rem;width:100%" onclick="renderPrompts()">🎲 New set of prompts</button>
+      </div>
+    </div>
+
+    <!-- RESOURCE LIBRARY -->
+    <div class="card">
+      <div class="card-title">📚 Resource Library</div>
+      <div class="tab-bar" id="resTabBar">
+        <button class="tab-btn active" onclick="switchResTab('apps',this)">Apps</button>
+        <button class="tab-btn" onclick="switchResTab('books',this)">Books</button>
+        <button class="tab-btn" onclick="switchResTab('practices',this)">Free Practices</button>
+        <button class="tab-btn" onclick="switchResTab('support',this)">Support Lines</button>
+      </div>
+      <div id="res-apps"><div class="resource-grid" id="resApps"></div></div>
+      <div id="res-books" style="display:none"><div class="resource-grid" id="resBooks"></div></div>
+      <div id="res-practices" style="display:none"><div class="resource-grid" id="resPractices"></div></div>
+      <div id="res-support" style="display:none"><div class="resource-grid" id="resSupport"></div></div>
+    </div>
+
+    <!-- IMPORT -->
+    <div class="card">
+      <div class="card-title">📥 Import TypingMind Chats</div>
+      <div class="banner banner-purple" style="margin-bottom:1rem">
+        <span>🔒</span>
+        <span>Your entries live only in <strong>your browser</strong>. Import stays local, always.</span>
+      </div>
+      <p style="font-size:0.84rem;color:var(--text-secondary);line-height:1.6;margin-bottom:1rem">
+        Got TypingMind exports? Drop them in and I'll convert them to journal entries and run full analysis.
+      </p>
+      <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
+        <label class="btn btn-primary" style="cursor:pointer">
+          📂 Choose TypingMind JSON
+          <input type="file" id="importFileInput" accept=".json" multiple style="display:none" onchange="importTypingMind(this)">
+        </label>
+        <button class="btn btn-ghost" onclick="clearAllEntries()">🗑️ Clear all entries</button>
+        <span id="importStatus" style="font-size:0.8rem;color:var(--text-muted)"></span>
+      </div>
+      <div id="importLog" style="display:none;margin-top:1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:1rem;font-size:0.78rem;color:var(--text-secondary);line-height:1.7;max-height:180px;overflow-y:auto"></div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL 4: INSIGHTS ══ -->
+  <div id="panel-insights" class="journal-panel">
+
+    <!-- Stats -->
+    <div class="stat-row" id="statsRow" style="margin-bottom:1rem">
+      <div class="stat-box"><div class="stat-num" id="statEntries">0</div><div class="stat-label">Entries</div></div>
+      <div class="stat-box"><div class="stat-num" id="statStreak">0</div><div class="stat-label">Streak 🔥</div></div>
+      <div class="stat-box"><div class="stat-num" id="statMood">—</div><div class="stat-label">Top Mood</div></div>
+      <div class="stat-box"><div class="stat-num" id="statWords">0</div><div class="stat-label">Words</div></div>
+    </div>
+
+    <!-- Pattern Radar -->
+    <div class="card">
       <div class="card-title">🔍 Pattern Radar</div>
       <div id="patternContent">
         <div class="empty-state"><div class="icon">🌱</div><p>Write a few entries and I'll start spotting what keeps coming up for you.</p></div>
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:0">
+    <!-- Cognitive Lens -->
+    <div class="card">
       <div class="card-title">🧩 Cognitive Lens</div>
       <div id="cognitiveContent">
         <div class="empty-state"><div class="icon">🔭</div><p>Your thinking patterns — like catastrophising or all-or-nothing thinking — will show up here.</p></div>
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:0">
+    <!-- Mood Chart -->
+    <div class="card">
       <div class="card-title">📈 Mood Over Time</div>
       <div id="moodContent">
         <div class="empty-state"><div class="icon">📊</div><p>Tag your moods as you write to see trends emerge.</p></div>
       </div>
     </div>
-  </div>
-  <div style="height:1.5rem"></div>
 
-  <!-- THERAPY TOOLKIT -->
-  <div class="card">
-    <div class="card-title">💡 Therapy Toolkit</div>
-    <div id="therapyBanner" class="banner banner-purple" style="display:none">
-      <span>🤖</span><span id="therapyBannerText"></span>
-    </div>
-
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('techniques',this)">Techniques</button>
-      <button class="tab-btn" onclick="switchTab('cbt',this)">CBT Record</button>
-      <button class="tab-btn" onclick="switchTab('grounding',this)">Grounding</button>
-      <button class="tab-btn" onclick="switchTab('prompts',this)">Prompts</button>
-    </div>
-
-    <!-- TECHNIQUES TAB -->
-    <div id="tab-techniques">
-      <div id="techniquesList"></div>
-    </div>
-
-    <!-- CBT RECORD TAB -->
-    <div id="tab-cbt" style="display:none">
-      <div class="banner banner-purple" style="margin-bottom:1rem">
-        <span>📝</span>
-        <span>A thought record helps you catch, examine, and gently reframe unhelpful thinking. Fill in as much or as little as feels useful — you don't have to do every section.</span>
-      </div>
-      <div id="cbtFields">
-        <div class="tr-field"><label>Situation — What happened? Where were you? Who was there?</label><textarea rows="2" placeholder="e.g. I sent an email and got a delayed reply..."></textarea></div>
-        <div class="tr-field"><label>Automatic Thought — What went through your mind?</label><textarea rows="2" placeholder="e.g. They must think I'm useless. I always mess things up..."></textarea></div>
-        <div class="tr-field"><label>Emotion — What did you feel? Rate intensity (0–100%)</label><textarea rows="1" placeholder="e.g. Anxious 80%, Shame 60%..."></textarea></div>
-        <div class="tr-field"><label>Evidence FOR the thought</label><textarea rows="2" placeholder="e.g. The reply was late. They seemed distracted last time..."></textarea></div>
-        <div class="tr-field"><label>Evidence AGAINST the thought</label><textarea rows="2" placeholder="e.g. They always reply late. It's been a busy week for everyone..."></textarea></div>
-        <div class="tr-field"><label>Alternative / Balanced Thought</label><textarea rows="2" placeholder="e.g. There are many reasons for a delayed reply. One email doesn't define my work..."></textarea></div>
-        <div class="tr-field"><label>How do you feel now? Re-rate the emotion</label><textarea rows="1" placeholder="e.g. Anxious 35%, more grounded..."></textarea></div>
-      </div>
-      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="saveCBTRecord()">💾 Save to Journal</button>
-        <button class="btn btn-ghost" onclick="clearCBT()">Clear</button>
-      </div>
-    </div>
-
-    <!-- GROUNDING TAB -->
-    <div id="tab-grounding" style="display:none">
-      <div class="banner banner-amber" style="margin-bottom:1rem">
-        <span>⚡</span>
-        <span>Use these when you feel overwhelmed, anxious, or disconnected. They work best when you actually <em>do</em> them rather than just reading them.</span>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">🫁 Box Breathing (4-4-4-4)</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Activates your parasympathetic nervous system to slow your heart rate. Works in minutes and you can do it anywhere.</p>
-          <ul class="technique-steps">
-            <li>Breathe IN for 4 counts (feel your belly expand, not just your chest)</li>
-            <li>HOLD for 4 counts</li>
-            <li>Breathe OUT slowly for 4 counts</li>
-            <li>HOLD for 4 counts</li>
-            <li>Repeat 4–6 times. Notice your heart rate slow.</li>
-          </ul>
-          <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="startBreath(event)">▶ Start guided timer</button>
-          <div id="boxBreathTimer" style="display:none">
-            <div id="breathPhase">IN</div>
-            <div id="breathCount">4</div>
-            <div class="breath-track"><div id="breathBar"></div></div>
-            <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="stopBreath(event)">⏹ Stop</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">👁️ 5-4-3-2-1 Grounding</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Brings you back to the present moment by engaging all five senses. Excellent for dissociation, spiralling thoughts, or panic.</p>
-          <ul class="technique-steps">
-            <li>Name <strong>5 things</strong> you can SEE right now</li>
-            <li>Name <strong>4 things</strong> you can TOUCH or feel</li>
-            <li>Name <strong>3 things</strong> you can HEAR</li>
-            <li>Name <strong>2 things</strong> you can SMELL (or two you love)</li>
-            <li>Name <strong>1 thing</strong> you can TASTE</li>
-          </ul>
-          <p style="margin-top:0.5rem">Say them out loud if you can. It helps more than you'd think.</p>
-        </div>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">🧊 Cold Water Reset</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Based on the mammalian diving reflex — cold water on your face rapidly slows your heart rate. Surprisingly fast and effective for acute distress or a very bad moment.</p>
-          <ul class="technique-steps">
-            <li>Run cold water and splash your face 3–5 times</li>
-            <li>Or hold your wrists under cold running water for 30 seconds</li>
-            <li>Breathe slowly while you do it</li>
-            <li>Notice the physical shift — it's real</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">🦶 Body Scan</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Pulls attention from anxious thoughts into physical sensation. Particularly useful for dissociation or when you're carrying tension you didn't notice.</p>
-          <ul class="technique-steps">
-            <li>Sit or lie comfortably. Close your eyes if that feels okay.</li>
-            <li>Start at the crown of your head — notice any tension or tingling</li>
-            <li>Slowly move down: forehead, jaw (is it clenched?), neck, shoulders</li>
-            <li>Continue to chest, stomach, arms, hands</li>
-            <li>Down to hips, thighs, calves, feet, toes</li>
-            <li>Wherever you notice tension: breathe into it, let it soften on the exhale</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">🏡 Safe Place Visualisation</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Your brain responds to vividly imagined safety almost the same way it responds to real safety. Build this slowly so it feels real — it becomes a refuge you can return to anytime.</p>
-          <ul class="technique-steps">
-            <li>Close your eyes. Breathe slowly.</li>
-            <li>Imagine a place where you feel completely safe and calm — real or invented, no rules</li>
-            <li>Notice the colours, the light, the temperature</li>
-            <li>What can you hear? What does it smell like? What's underfoot?</li>
-            <li>Spend 2–5 minutes just being there. Let your body relax.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- PROMPTS TAB -->
-    <div id="tab-prompts" style="display:none">
-      <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:1rem;line-height:1.6">Sometimes the blank page is the hardest part. Click any prompt to start writing from it.</p>
-      <div id="promptsList"></div>
-      <button class="btn btn-ghost" style="margin-top:0.75rem;width:100%" onclick="renderPrompts()">🎲 New set of prompts</button>
-    </div>
   </div>
 
-  <!-- RESOURCE LIBRARY -->
-  <div class="card">
-    <div class="card-title">📚 Resource Library</div>
-    <div class="tab-bar" id="resTabBar">
-      <button class="tab-btn active" onclick="switchResTab('apps',this)">Apps</button>
-      <button class="tab-btn" onclick="switchResTab('books',this)">Books</button>
-      <button class="tab-btn" onclick="switchResTab('practices',this)">Free Practices</button>
-      <button class="tab-btn" onclick="switchResTab('support',this)">Support Lines</button>
-    </div>
-    <div id="res-apps"><div class="resource-grid" id="resApps"></div></div>
-    <div id="res-books" style="display:none"><div class="resource-grid" id="resBooks"></div></div>
-    <div id="res-practices" style="display:none"><div class="resource-grid" id="resPractices"></div></div>
-    <div id="res-support" style="display:none"><div class="resource-grid" id="resSupport"></div></div>
-  </div>
-
-  <!-- IMPORT CARD -->
-  <div class="card">
-    <div class="card-title">📥 Import TypingMind Chats</div>
-    <div class="banner banner-purple" style="margin-bottom:1rem">
-      <span>🔒</span>
-      <span>Your entries are stored only in <strong>your browser</strong> — no one else who visits this site can see them. Import stays local, always.</span>
-    </div>
-    <p style="font-size:0.84rem;color:var(--text-secondary);line-height:1.6;margin-bottom:1rem">
-      Got TypingMind chat exports? Drop them in and I'll pull out your messages, convert them to journal entries, and run the pattern analysis on everything. Your data never leaves your browser.
-    </p>
-    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
-      <label class="btn btn-primary" style="cursor:pointer">
-        📂 Choose TypingMind JSON files
-        <input type="file" id="importFileInput" accept=".json" multiple style="display:none" onchange="importTypingMind(this)">
-      </label>
-      <button class="btn btn-ghost" onclick="clearAllEntries()">🗑️ Clear all entries</button>
-      <span id="importStatus" style="font-size:0.8rem;color:var(--text-muted)"></span>
-    </div>
-    <div id="importLog" style="display:none;margin-top:1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:1rem;font-size:0.78rem;color:var(--text-secondary);line-height:1.7;max-height:180px;overflow-y:auto"></div>
-  </div>
-
-  <!-- ENTRY HISTORY -->
-  <div class="card">
-    <div class="card-title">📋 Entry History</div>
-    <input class="search-input" type="search" id="entrySearch" placeholder="Search your entries..." oninput="renderHistory()">
-    <div id="historyContent">
-      <div class="empty-state"><div class="icon">📖</div><p>Your entries live here. Start writing — even a few sentences counts.</p></div>
-    </div>
-  </div>
-
+</div><!-- /journal-panels -->
 </main>
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bottom-nav">
+  <button class="bnav-btn active" id="bnav-write" onclick="switchPanel('write')">
+    <span class="bnav-icon">✍️</span>
+    <span>Write</span>
+  </button>
+  <button class="bnav-btn" id="bnav-entries" onclick="switchPanel('entries')">
+    <span class="bnav-icon">📓</span>
+    <span>Entries</span>
+  </button>
+  <button class="bnav-btn" id="bnav-tools" onclick="switchPanel('tools')">
+    <span class="bnav-icon">🛠️</span>
+    <span>Tools</span>
+  </button>
+  <button class="bnav-btn" id="bnav-insights" onclick="switchPanel('insights')">
+    <span class="bnav-icon">📊</span>
+    <span>Insights</span>
+  </button>
+</nav>
 
 <!-- CONFIRM DELETE -->
 <div class="confirm-overlay" id="confirmOverlay">
@@ -1264,6 +1382,18 @@ let breathCount = 4;
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
 
+// ─── PANEL NAVIGATION ──────────────────────────────────────────────────────
+
+function switchPanel(name) {
+  document.querySelectorAll('.journal-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('bnav-' + name).classList.add('active');
+  // Scroll to top of newly active panel
+  const panel = document.getElementById('panel-' + name);
+  panel.scrollTop = 0;
+}
+
 function init() {
   loadEntries();
   renderMoodGrid();
@@ -1271,6 +1401,8 @@ function init() {
   renderResources();
   renderPrompts();
   renderAll();
+  switchPanel('write');
+  checkFeelingCheckin();
 }
 
 function loadEntries() {
@@ -1951,7 +2083,6 @@ function dismissCheckin() {
 
 // ─── GO ────────────────────────────────────────────────────────────────────
 init();
-checkFeelingCheckin();
 </script>
 <script>
   function openSidebar() {
