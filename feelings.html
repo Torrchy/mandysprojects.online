@@ -143,6 +143,27 @@
       color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase;
     }
 
+    /* ── GLOBAL BOTTOM NAV ── */
+    :root { --bnav-h: calc(60px + env(safe-area-inset-bottom)); }
+    body { padding-bottom: var(--bnav-h) !important; }
+    .global-bnav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+      height: var(--bnav-h); padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(7,7,15,0.97);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid var(--border); display: flex; align-items: stretch;
+    }
+    .gbnav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 3px;
+      text-decoration: none; color: var(--text-secondary);
+      transition: color 0.18s; padding-top: 6px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .gbnav-item:hover, .gbnav-item.active { color: var(--accent-purple); }
+    .gbnav-icon { font-size: 1.3rem; line-height: 1; }
+    .gbnav-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
     /* ── PAGE ── */
     main {
       max-width: 680px; margin: 0 auto; padding: 2rem 1.25rem 4rem;
@@ -1072,5 +1093,29 @@ loadHistory();
 
 window.addEventListener('fbSyncComplete', () => { loadHistory(); });
 </script>
+
+<!-- Global Bottom Nav -->
+<nav class="global-bnav">
+  <a href="index.html" class="gbnav-item">
+    <span class="gbnav-icon">🏠</span>
+    <span class="gbnav-label">Home</span>
+  </a>
+  <a href="mission-control.html" class="gbnav-item">
+    <span class="gbnav-icon">📊</span>
+    <span class="gbnav-label">Money</span>
+  </a>
+  <a href="journal.html" class="gbnav-item">
+    <span class="gbnav-icon">📓</span>
+    <span class="gbnav-label">Journal</span>
+  </a>
+  <a href="feelings.html" class="gbnav-item active">
+    <span class="gbnav-icon">🫀</span>
+    <span class="gbnav-label">Feelings</span>
+  </a>
+  <a href="habits.html" class="gbnav-item">
+    <span class="gbnav-icon">✅</span>
+    <span class="gbnav-label">Habits</span>
+  </a>
+</nav>
 </body>
 </html>

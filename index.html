@@ -310,6 +310,81 @@
     @media (max-width: 360px) {
       .modules { grid-template-columns: 1fr; }
     }
+
+    /* ── GLOBAL BOTTOM NAV ── */
+    :root { --bnav-h: calc(60px + env(safe-area-inset-bottom)); }
+    body { padding-bottom: var(--bnav-h); }
+    .global-bnav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 500;
+      height: var(--bnav-h);
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(7,7,15,0.97);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid #1e1e35;
+      display: flex; align-items: stretch;
+    }
+    .gbnav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 3px;
+      text-decoration: none; color: #7070a0;
+      transition: color 0.18s; padding-top: 6px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .gbnav-item:hover, .gbnav-item.active { color: #8b5cf6; }
+    .gbnav-icon { font-size: 1.3rem; line-height: 1; }
+    .gbnav-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* ── PRESENCE WIDGET ── */
+    .presence-widget {
+      background: #131320;
+      border: 1px solid #1e1e35;
+      border-radius: 16px;
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .presence-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.9rem;
+    }
+    .presence-title {
+      font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: #7070a0;
+    }
+    .presence-sparkline {
+      display: flex; align-items: flex-end; gap: 2px; height: 20px;
+    }
+    .spark-bar {
+      width: 4px; border-radius: 2px;
+      background: #8b5cf6; opacity: 0.4;
+      transition: height 0.3s, opacity 0.3s;
+    }
+    .spark-bar.latest { opacity: 1; }
+    .presence-scale {
+      display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem;
+    }
+    .presence-btn {
+      flex: 1; min-width: 28px;
+      height: 36px; border-radius: 8px;
+      border: 1.5px solid #1e1e35;
+      background: #0f0f1c;
+      color: #7070a0; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .presence-btn:hover { border-color: #8b5cf6; color: #e8e8f0; }
+    .presence-btn.selected { border-color: #8b5cf6; background: rgba(139,92,246,0.15); color: #8b5cf6; }
+    .presence-poles {
+      display: flex; justify-content: space-between;
+      font-size: 0.6rem; color: #404060; margin-top: 0.3rem;
+    }
+    .presence-saved {
+      font-size: 0.7rem; color: #22c55e; margin-top: 0.5rem;
+      text-align: center; opacity: 0; transition: opacity 0.3s;
+    }
+    .presence-saved.show { opacity: 1; }
   </style>
 </head>
 <body>
@@ -364,6 +439,20 @@
       <div class="greeting-time" id="greetingTime"></div>
       <div class="greeting-head" id="greetingHead">Hello 👋</div>
       <div class="greeting-date" id="greetingDate"></div>
+    </div>
+
+    <!-- Presence widget -->
+    <div class="presence-widget">
+      <div class="presence-header">
+        <span class="presence-title">How present do you feel?</span>
+        <div class="presence-sparkline" id="presenceSparkline"></div>
+      </div>
+      <div class="presence-scale" id="presenceScale"></div>
+      <div class="presence-poles">
+        <span>Fully here</span>
+        <span>Behind glass</span>
+      </div>
+      <div class="presence-saved" id="presenceSaved">✓ Logged</div>
     </div>
 
     <!-- Status chips -->
@@ -445,6 +534,30 @@
     </div>
 
   </main>
+
+  <!-- Global Bottom Nav -->
+  <nav class="global-bnav">
+    <a href="index.html" class="gbnav-item active">
+      <span class="gbnav-icon">🏠</span>
+      <span class="gbnav-label">Home</span>
+    </a>
+    <a href="mission-control.html" class="gbnav-item">
+      <span class="gbnav-icon">📊</span>
+      <span class="gbnav-label">Money</span>
+    </a>
+    <a href="journal.html" class="gbnav-item">
+      <span class="gbnav-icon">📓</span>
+      <span class="gbnav-label">Journal</span>
+    </a>
+    <a href="feelings.html" class="gbnav-item">
+      <span class="gbnav-icon">🫀</span>
+      <span class="gbnav-label">Feelings</span>
+    </a>
+    <a href="habits.html" class="gbnav-item">
+      <span class="gbnav-icon">✅</span>
+      <span class="gbnav-label">Habits</span>
+    </a>
+  </nav>
 
   <script>
     // ── Sidebar
@@ -545,6 +658,69 @@
     }
     refreshStats();
     window.addEventListener('fbSyncComplete', refreshStats);
+
+    // ── Presence widget
+    (function() {
+      var KEY = 'mp_presence_log';
+      var log = JSON.parse(localStorage.getItem(KEY) || '[]');
+      var selected = null;
+      var savedTimer = null;
+
+      function buildScale() {
+        var scale = document.getElementById('presenceScale');
+        scale.innerHTML = '';
+        for (var i = 1; i <= 10; i++) {
+          (function(val) {
+            var btn = document.createElement('button');
+            btn.className = 'presence-btn';
+            btn.textContent = val;
+            btn.title = val <= 3 ? 'Fully here' : val <= 7 ? 'Somewhere in between' : 'Behind glass';
+            btn.addEventListener('click', function() {
+              document.querySelectorAll('.presence-btn').forEach(function(b) { b.classList.remove('selected'); });
+              btn.classList.add('selected');
+              selected = val;
+              savePresence(val);
+            });
+            scale.appendChild(btn);
+          })(i);
+        }
+      }
+
+      function savePresence(val) {
+        var entry = { ts: new Date().toISOString(), value: val };
+        log.unshift(entry);
+        if (log.length > 30) log = log.slice(0, 30);
+        localStorage.setItem(KEY, JSON.stringify(log));
+        buildSparkline();
+        var saved = document.getElementById('presenceSaved');
+        saved.classList.add('show');
+        clearTimeout(savedTimer);
+        savedTimer = setTimeout(function() { saved.classList.remove('show'); }, 2000);
+      }
+
+      function buildSparkline() {
+        var el = document.getElementById('presenceSparkline');
+        el.innerHTML = '';
+        var recent = log.slice(0, 7).reverse();
+        recent.forEach(function(entry, i) {
+          var bar = document.createElement('div');
+          bar.className = 'spark-bar' + (i === recent.length - 1 ? ' latest' : '');
+          var pct = ((entry.value - 1) / 9) * 100;
+          bar.style.height = Math.max(4, pct * 0.2) + 'px';
+          el.appendChild(bar);
+        });
+      }
+
+      // Highlight today's last entry if exists
+      var today = new Date().toISOString().slice(0, 10);
+      var todayEntry = log.find(function(e) { return e.ts.slice(0, 10) === today; });
+      buildScale();
+      buildSparkline();
+      if (todayEntry) {
+        var btns = document.querySelectorAll('.presence-btn');
+        if (btns[todayEntry.value - 1]) btns[todayEntry.value - 1].classList.add('selected');
+      }
+    })();
   </script>
 </body>
 </html>

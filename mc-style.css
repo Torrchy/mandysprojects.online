@@ -856,6 +856,171 @@ body::after {
 /* SVG gradient definition for ring */
 .svg-defs { position: absolute; width: 0; height: 0; }
 
+/* ===== APP-MODE LAYOUT (tabbed, no scroll) ===== */
+:root {
+    --nav-h:   calc(56px + env(safe-area-inset-top));
+    --tabs-h:  44px;
+    --bnav-h:  calc(60px + env(safe-area-inset-bottom));
+}
+
+body.app-mode {
+    height: 100dvh;
+    overflow: hidden;
+}
+
+/* ── Tab bar ── */
+.mc-tabs {
+    position: fixed;
+    top: var(--nav-h);
+    left: 0; right: 0;
+    z-index: 150;
+    height: var(--tabs-h);
+    display: flex;
+    align-items: stretch;
+    background: rgba(7,7,15,0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 0.25rem;
+}
+.mc-tab {
+    flex: 1;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.2s, border-color 0.2s;
+    padding: 0 0.25rem;
+}
+.mc-tab:hover { color: var(--text-primary); }
+.mc-tab.active {
+    color: var(--accent-purple);
+    border-bottom-color: var(--accent-purple);
+}
+
+/* ── Tab content area ── */
+.mc-content {
+    position: fixed;
+    top: calc(var(--nav-h) + var(--tabs-h));
+    left: 0; right: 0;
+    bottom: var(--bnav-h);
+    overflow: hidden;
+}
+.mc-panel {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(20px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    -webkit-overflow-scrolling: touch;
+}
+.mc-panel.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+}
+.mc-panel.slide-left {
+    transform: translateX(-20px);
+}
+
+/* Compact header inside panels */
+.mc-compact-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+.mc-compact-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.mc-compact-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+/* inside panels, panels go edge-to-edge, no max-width weirdness */
+.mc-panel .panel { margin-bottom: 0.75rem; }
+.mc-panel .main-grid { display: block; }
+.mc-panel .right-column { display: contents; }
+
+/* ── Global Bottom Nav ── */
+.global-bnav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 500;
+    height: var(--bnav-h);
+    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(7,7,15,0.97);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: stretch;
+}
+.gbnav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: color 0.18s;
+    padding-top: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.gbnav-item:hover { color: var(--text-primary); }
+.gbnav-item.active { color: var(--accent-purple); }
+.gbnav-icon { font-size: 1.3rem; line-height: 1; }
+.gbnav-label {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ── Quick-add FAB on overview ── */
+.mc-fab {
+    position: sticky;
+    bottom: 1rem;
+    float: right;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--accent-purple);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 300;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(139,92,246,0.4);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+    z-index: 10;
+    margin-right: 0.5rem;
+}
+.mc-fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(139,92,246,0.55); }
+.mc-fab:active { transform: scale(0.95); }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1100px) {
     .cycle-banner { flex-direction: column; text-align: center; }
