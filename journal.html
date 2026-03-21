@@ -2,135 +2,159 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Journal Insight Engine — Mandy's Projects</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#8b5cf6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Journal">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-sync.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+
   <style>
-    /* ── Design Tokens (matching mc-style.css) ── */
-    :root {
-      --bg-primary: #07070f;
-      --bg-secondary: #0f0f1c;
-      --bg-card: #131320;
-      --bg-card-hover: #181830;
-      --border: #1e1e35;
-      --border-glow: rgba(139, 92, 246, 0.25);
-      --text-primary: #e8e8f0;
-      --text-secondary: #7070a0;
-      --text-muted: #404060;
-      --accent-purple: #8b5cf6;
-      --accent-purple-dim: rgba(139, 92, 246, 0.15);
-      --accent-green: #22c55e;
-      --accent-green-dim: rgba(34, 197, 94, 0.12);
-      --accent-red: #ef4444;
-      --accent-red-dim: rgba(239, 68, 68, 0.12);
-      --accent-amber: #f59e0b;
-      --accent-pink: #ec4899;
-      --accent-blue: #3b82f6;
-      --accent-teal: #14b8a6;
-    }
-
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: Inter, -apple-system, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: radial-gradient(rgba(139, 92, 246, 0.06) 1px, transparent 1px);
-      background-size: 28px 28px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    body::after {
-      content: '';
-      position: fixed;
-      top: -200px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── NAV ── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 2rem;
-      background: rgba(7, 7, 15, 0.88);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-logo {
-      font-weight: 800;
-      font-size: 1.1rem;
-      color: var(--text-primary);
-      text-decoration: none;
-      letter-spacing: -0.02em;
-    }
-    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
-    .nav-links a {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--text-primary); }
-    .nav-links a.active { color: var(--accent-purple); }
-
     /* ── LAYOUT ── */
     main {
       position: relative;
       z-index: 1;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 5rem;
     }
 
-    .page-header { margin-bottom: 2rem; }
-    .page-header h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.25rem;
+    /* ── INTERNAL BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--bnav-h);
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(7, 7, 15, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: stretch;
+      z-index: 100;
     }
-    .page-header .subtitle { color: var(--text-secondary); font-size: 0.9rem; }
+    .bnav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 6px 4px;
+      font-family: inherit;
+    }
+    .bnav-icon { font-size: 1.3rem; line-height: 1; }
+    .bnav-btn.active { color: var(--purple); }
+    .bnav-btn.active .bnav-icon { filter: drop-shadow(0 0 6px rgba(139,92,246,0.5)); }
 
-    /* ── CARD ── */
+    /* ── PANEL CONTAINER ── */
+    .journal-panels {
+      height: calc(100dvh - var(--nav-h) - var(--bnav-h));
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── PANELS (shared) ── */
+    .journal-panel {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 1rem;
+      overscroll-behavior: contain;
+    }
+    .journal-panel.active { display: block; }
+
+    /* ── WRITE PANEL (flex column, textarea fills space) ── */
+    #panel-write {
+      display: none;
+      flex-direction: column;
+      gap: 0.65rem;
+      padding: 0.9rem 1rem;
+    }
+    #panel-write.active { display: flex; }
+
+    /* ── MOOD STRIP (horizontal scroll, no wrap) ── */
+    .mood-strip-label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text3);
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .mood-strip {
+      display: flex;
+      gap: 0.4rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .mood-strip::-webkit-scrollbar { display: none; }
+    .mood-strip .mood-btn { flex-shrink: 0; white-space: nowrap; }
+
+    /* ── WRITE TEXTAREA (expands to fill) ── */
+    #panel-write .journal-textarea {
+      flex: 1;
+      min-height: 120px;
+      resize: none;
+    }
+
+    /* ── WRITE FOOTER ── */
+    .write-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    /* ── SECTION LABEL (override shared) ── */
+    .section-label {
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── INSIGHT PANEL CARDS ── */
+    #panel-insights .card,
+    #panel-tools .card { margin-bottom: 1rem; }
+    #panel-insights .card:last-child,
+    #panel-tools .card:last-child { margin-bottom: 0.5rem; }
+
+    /* ── CARD OVERRIDES ── */
     .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
       border-radius: 16px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
-      transition: border-color 0.2s;
     }
-    .card:hover { border-color: var(--border-glow); }
     .card-title {
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--text-secondary);
+      color: var(--text2);
       margin-bottom: 1rem;
     }
 
@@ -139,18 +163,18 @@
     .stat-box {
       flex: 1;
       min-width: 100px;
-      background: var(--bg-card);
+      background: var(--bg3);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 1rem;
       text-align: center;
     }
-    .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--accent-purple); }
+    .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--purple); }
     .stat-label {
       font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-muted);
+      color: var(--text3);
       margin-top: 0.2rem;
     }
 
@@ -161,28 +185,28 @@
       border-radius: 100px;
       border: 1px solid var(--border);
       background: transparent;
-      color: var(--text-secondary);
+      color: var(--text2);
       font-size: 0.78rem;
       cursor: pointer;
       transition: all 0.2s;
       font-family: inherit;
     }
-    .mood-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+    .mood-btn:hover { border-color: var(--purple); color: var(--purple); }
     .mood-btn.selected {
-      background: var(--accent-purple-dim);
-      border-color: var(--accent-purple);
-      color: var(--accent-purple);
+      background: var(--purple-dim);
+      border-color: var(--purple);
+      color: var(--purple);
     }
 
     /* ── TEXTAREA ── */
     .journal-textarea {
       width: 100%;
       min-height: 160px;
-      background: var(--bg-secondary);
+      background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1rem;
-      color: var(--text-primary);
+      color: var(--text);
       font-family: inherit;
       font-size: 0.95rem;
       line-height: 1.7;
@@ -190,8 +214,8 @@
       transition: border-color 0.2s;
       outline: none;
     }
-    .journal-textarea:focus { border-color: var(--accent-purple); }
-    .journal-textarea::placeholder { color: var(--text-muted); }
+    .journal-textarea:focus { border-color: var(--purple); }
+    .journal-textarea::placeholder { color: var(--text3); }
 
     .entry-footer {
       display: flex;
@@ -201,30 +225,13 @@
       flex-wrap: wrap;
       gap: 0.5rem;
     }
-    .word-count { font-size: 0.75rem; color: var(--text-muted); }
+    .word-count { font-size: 0.75rem; color: var(--text3); }
 
-    /* ── BUTTONS ── */
-    .btn {
-      padding: 0.6rem 1.4rem;
-      border-radius: 10px;
-      border: none;
-      font-family: inherit;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+    /* ── BUTTON OVERRIDES ── */
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-      color: white;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
     }
     .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-    }
-    .btn-ghost:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
 
     /* ── GRID ── */
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
@@ -249,7 +256,7 @@
     .chip-green  { background: rgba(34,197,94,0.15);   color: #4ade80; }
     .chip-blue   { background: rgba(59,130,246,0.15);  color: #60a5fa; }
     .chip-teal   { background: rgba(20,184,166,0.15);  color: #2dd4bf; }
-    .chip-muted  { background: rgba(64,64,96,0.3);     color: var(--text-muted); }
+    .chip-muted  { background: rgba(64,64,96,0.3);     color: var(--text3); }
 
     /* ── PROGRESS BAR ── */
     .progress-bar {
@@ -262,13 +269,13 @@
     .progress-fill {
       height: 100%;
       border-radius: 100px;
-      background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink));
+      background: linear-gradient(90deg, var(--purple), var(--pink));
       transition: width 0.6s ease;
     }
 
     /* ── TECHNIQUE CARDS ── */
     .technique-card {
-      background: var(--bg-secondary);
+      background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1rem 1.25rem;
@@ -281,18 +288,18 @@
     .technique-card.highlighted { border-color: rgba(139,92,246,0.35); background: rgba(139,92,246,0.04); }
     .technique-header { display: flex; align-items: center; justify-content: space-between; }
     .technique-title { font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-    .technique-body { display: none; margin-top: 0.8rem; color: var(--text-secondary); font-size: 0.84rem; line-height: 1.7; }
+    .technique-body { display: none; margin-top: 0.8rem; color: var(--text2); font-size: 0.84rem; line-height: 1.7; }
     .technique-body.open { display: block; }
     .technique-steps { list-style: none; margin-top: 0.5rem; }
-    .technique-steps li { padding: 0.25rem 0 0.25rem 1.2rem; position: relative; color: var(--text-secondary); font-size: 0.83rem; }
-    .technique-steps li::before { content: '→'; position: absolute; left: 0; color: var(--accent-purple); }
-    .chevron { transition: transform 0.2s; color: var(--text-muted); font-size: 0.75rem; flex-shrink: 0; }
+    .technique-steps li { padding: 0.25rem 0 0.25rem 1.2rem; position: relative; color: var(--text2); font-size: 0.83rem; }
+    .technique-steps li::before { content: '→'; position: absolute; left: 0; color: var(--purple); }
+    .chevron { transition: transform 0.2s; color: var(--text3); font-size: 0.75rem; flex-shrink: 0; }
     .chevron.open { transform: rotate(180deg); }
 
     /* ── RESOURCE GRID ── */
     .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.7rem; }
     .resource-item {
-      background: var(--bg-secondary);
+      background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1rem;
@@ -302,16 +309,16 @@
     }
     .resource-item:hover { border-color: var(--border-glow); transform: translateY(-2px); }
     .resource-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
-    .resource-name { font-weight: 600; font-size: 0.82rem; color: var(--text-primary); margin-bottom: 0.2rem; }
-    .resource-desc { font-size: 0.73rem; color: var(--text-secondary); line-height: 1.45; }
-    .resource-tag { font-size: 0.63rem; color: var(--accent-purple); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.3rem; }
+    .resource-name { font-weight: 600; font-size: 0.82rem; color: var(--text); margin-bottom: 0.2rem; }
+    .resource-desc { font-size: 0.73rem; color: var(--text2); line-height: 1.45; }
+    .resource-tag { font-size: 0.63rem; color: var(--purple); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.3rem; }
 
     /* ── ENTRY HISTORY ── */
     .entry-item { border-bottom: 1px solid var(--border); padding: 1rem 0; }
     .entry-item:last-child { border-bottom: none; }
     .entry-meta { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.45rem; flex-wrap: wrap; }
-    .entry-date { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
-    .entry-text { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.65; white-space: pre-wrap; }
+    .entry-date { font-size: 0.72rem; color: var(--text3); font-weight: 600; }
+    .entry-text { font-size: 0.85rem; color: var(--text2); line-height: 1.65; white-space: pre-wrap; }
     .entry-clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     .entry-actions { display: flex; gap: 0.4rem; margin-top: 0.45rem; }
     .btn-tiny {
@@ -320,16 +327,16 @@
       border-radius: 6px;
       border: 1px solid var(--border);
       background: transparent;
-      color: var(--text-muted);
+      color: var(--text3);
       cursor: pointer;
       font-family: inherit;
       transition: all 0.2s;
     }
-    .btn-tiny:hover { border-color: var(--accent-red); color: var(--accent-red); }
-    .btn-tiny.expand:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+    .btn-tiny:hover { border-color: var(--red); color: var(--red); }
+    .btn-tiny.expand:hover { border-color: var(--purple); color: var(--purple); }
 
     /* ── EMPTY STATE ── */
-    .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); }
+    .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--text3); }
     .empty-state .icon { font-size: 2rem; margin-bottom: 0.6rem; }
     .empty-state p { font-size: 0.85rem; line-height: 1.6; }
 
@@ -345,7 +352,7 @@
       line-height: 1.55;
     }
     .banner-purple {
-      background: var(--accent-purple-dim);
+      background: var(--purple-dim);
       border: 1px solid rgba(139,92,246,0.2);
       color: #c4b5fd;
     }
@@ -367,7 +374,7 @@
       background: none;
       border: none;
       border-bottom: 2px solid transparent;
-      color: var(--text-secondary);
+      color: var(--text2);
       font-family: inherit;
       font-size: 0.78rem;
       font-weight: 600;
@@ -376,8 +383,8 @@
       margin-bottom: -1px;
       letter-spacing: 0.03em;
     }
-    .tab-btn:hover { color: var(--text-primary); }
-    .tab-btn.active { color: var(--accent-purple); border-bottom-color: var(--accent-purple); }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--purple); border-bottom-color: var(--purple); }
 
     /* ── THOUGHT RECORD ── */
     .tr-field { margin-bottom: 0.75rem; }
@@ -386,25 +393,25 @@
       font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-muted);
+      color: var(--text3);
       margin-bottom: 0.3rem;
       font-weight: 700;
     }
     .tr-field textarea, .tr-field input {
       width: 100%;
-      background: var(--bg-secondary);
+      background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 0.6rem 0.85rem;
-      color: var(--text-primary);
+      color: var(--text);
       font-family: inherit;
       font-size: 0.85rem;
       outline: none;
       transition: border-color 0.2s;
       resize: vertical;
     }
-    .tr-field textarea:focus, .tr-field input:focus { border-color: var(--accent-purple); }
-    .tr-field textarea::placeholder, .tr-field input::placeholder { color: var(--text-muted); }
+    .tr-field textarea:focus, .tr-field input:focus { border-color: var(--purple); }
+    .tr-field textarea::placeholder, .tr-field input::placeholder { color: var(--text3); }
 
     /* ── MINI CHART ── */
     .mini-chart {
@@ -429,13 +436,13 @@
       bottom: calc(100% + 5px);
       left: 50%;
       transform: translateX(-50%);
-      background: var(--bg-card);
+      background: var(--bg3);
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 0.2rem 0.45rem;
       font-size: 0.63rem;
       white-space: nowrap;
-      color: var(--text-primary);
+      color: var(--text);
       z-index: 10;
       opacity: 0;
       pointer-events: none;
@@ -446,19 +453,19 @@
     /* ── SEARCH ── */
     .search-input {
       width: 100%;
-      background: var(--bg-secondary);
+      background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 0.6rem 1rem;
-      color: var(--text-primary);
+      color: var(--text);
       font-family: inherit;
       font-size: 0.85rem;
       outline: none;
       transition: border-color 0.2s;
       margin-bottom: 1rem;
     }
-    .search-input:focus { border-color: var(--accent-purple); }
-    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: var(--purple); }
+    .search-input::placeholder { color: var(--text3); }
 
     /* ── CONFIRM OVERLAY ── */
     .confirm-overlay {
@@ -472,7 +479,7 @@
     }
     .confirm-overlay.open { display: flex; }
     .confirm-box {
-      background: var(--bg-card);
+      background: var(--bg3);
       border: 1px solid var(--border-glow);
       border-radius: 16px;
       padding: 2rem;
@@ -480,19 +487,19 @@
       width: 90%;
       text-align: center;
     }
-    .confirm-box p { color: var(--text-secondary); font-size: 0.88rem; margin: 0.75rem 0 1.5rem; line-height: 1.5; }
+    .confirm-box p { color: var(--text2); font-size: 0.88rem; margin: 0.75rem 0 1.5rem; line-height: 1.5; }
     .confirm-actions { display: flex; gap: 0.75rem; justify-content: center; }
 
     /* ── BREATH TIMER ── */
     #boxBreathTimer { margin-top: 0.75rem; text-align: center; }
-    #breathPhase { font-size: 1.8rem; font-weight: 800; color: var(--accent-purple); }
-    #breathCount { font-size: 2.5rem; font-weight: 800; color: var(--text-primary); margin: 0.15rem 0; }
+    #breathPhase { font-size: 1.8rem; font-weight: 800; color: var(--purple); }
+    #breathCount { font-size: 2.5rem; font-weight: 800; color: var(--text); margin: 0.15rem 0; }
     .breath-track { width: 100%; height: 7px; background: var(--border); border-radius: 100px; overflow: hidden; margin-top: 0.4rem; }
-    #breathBar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); border-radius: 100px; transition: width 1s linear; }
+    #breathBar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--purple), var(--pink)); border-radius: 100px; transition: width 1s linear; }
 
     /* ── INSIGHT BOX ── */
     .insight-box {
-      background: var(--accent-purple-dim);
+      background: var(--purple-dim);
       border: 1px solid rgba(139,92,246,0.18);
       border-radius: 10px;
       padding: 0.7rem 1rem;
@@ -504,7 +511,7 @@
 
     /* ── PROMPT CARD ── */
     .prompt-card {
-      background: var(--bg-secondary);
+      background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 0.8rem 1rem;
@@ -513,282 +520,341 @@
       transition: border-color 0.2s;
     }
     .prompt-card:hover { border-color: rgba(139,92,246,0.4); }
-    .prompt-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
-    .prompt-card .hint { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .prompt-card p { font-size: 0.85rem; color: var(--text2); line-height: 1.55; }
+    .prompt-card .hint { font-size: 0.68rem; color: var(--text3); margin-top: 0.25rem; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 600px) {
-      nav { padding: 0.85rem 1rem; }
-      .nav-links { gap: 1rem; }
-      main { padding: 1.25rem 1rem 3rem; }
-      .page-header h1 { font-size: 1.5rem; }
       .stat-num { font-size: 1.3rem; }
     }
+
+    /* ── CHECKIN BANNER ── */
+    .checkin-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      padding: 0.75rem 1rem;
+      background: rgba(139,92,246,0.08);
+      border: 1px solid rgba(139,92,246,0.25);
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .checkin-banner-text { font-size: 0.82rem; color: var(--text); }
+    .checkin-banner-btns { display: flex; gap: 0.4rem; }
   </style>
 </head>
-<body>
+<body class="app-mode">
 
-<nav>
-  <a class="nav-logo" href="index.html">← MP∙</a>
-  <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="mission-control.html">Mission Control</a></li>
-    <li><a href="journal.html" class="active">Journal</a></li>
-  </ul>
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Slide-in sidebar drawer -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <span class="sidebar-logo-icon">🧠</span>
+      <span class="sidebar-logo-text">Journal</span>
+    </div>
+    <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">✕</button>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html">
+      <span class="sidebar-link-icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a class="sidebar-link" href="mission-control.html">
+      <span class="sidebar-link-icon">📊</span>
+      <span>Mission Control</span>
+    </a>
+    <a class="sidebar-link active" href="journal.html">
+      <span class="sidebar-link-icon">📓</span>
+      <span>Journal</span>
+    </a>
+    <a class="sidebar-link" href="feelings.html">
+      <span class="sidebar-link-icon">🫀</span>
+      <span>Feelings</span>
+    </a>
+    <a class="sidebar-link" href="habits.html">
+      <span class="sidebar-link-icon">✅</span>
+      <span>Habits</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="sidebar-version">Journal Insight Engine</span>
+  </div>
+</aside>
+
+<!-- Top app bar -->
+<nav class="app-nav">
+  <button class="hamburger" id="hamburgerBtn" onclick="openSidebar()" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <span class="app-nav-title">Journal</span>
+  <div style="width:40px"></div>
 </nav>
 
-<main>
+<main class="fade-in">
+<div class="journal-panels">
 
-  <!-- PAGE HEADER -->
-  <div class="page-header">
-    <h1>🧠 Journal Insight Engine</h1>
-    <p class="subtitle">Pattern recognition across your thoughts. Finding the threads you didn't know were there.</p>
-  </div>
+  <!-- ══ PANEL 1: WRITE ══ -->
+  <div id="panel-write" class="journal-panel">
 
-  <!-- STATS -->
-  <div class="stat-row" id="statsRow">
-    <div class="stat-box"><div class="stat-num" id="statEntries">0</div><div class="stat-label">Entries</div></div>
-    <div class="stat-box"><div class="stat-num" id="statStreak">0</div><div class="stat-label">Day Streak 🔥</div></div>
-    <div class="stat-box"><div class="stat-num" id="statMood">—</div><div class="stat-label">Top Mood</div></div>
-    <div class="stat-box"><div class="stat-num" id="statWords">0</div><div class="stat-label">Words Written</div></div>
-  </div>
+    <!-- Feelings check-in banner -->
+    <div id="feelingCheckinBanner" class="checkin-banner" style="display:none">
+      <div class="checkin-banner-text" id="feelingCheckinText">🫀 You identified a feeling</div>
+      <div class="checkin-banner-btns">
+        <button class="btn btn-primary" style="padding:0.35rem 0.8rem;font-size:0.75rem" onclick="insertFeelingCheckin()">Insert</button>
+        <button class="btn btn-ghost" style="padding:0.35rem 0.75rem;font-size:0.75rem" onclick="dismissCheckin()">Dismiss</button>
+      </div>
+    </div>
 
-  <!-- ENTRY CARD -->
-  <div class="card">
-    <div class="card-title">✍️ Today's Entry</div>
-    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);font-weight:700;margin-bottom:0.6rem">How are you feeling right now? Pick all that apply</div>
-    <div class="mood-grid" id="moodGrid"></div>
+    <!-- Mood strip -->
+    <div>
+      <div class="mood-strip-label">How are you feeling? Pick all that apply</div>
+      <div class="mood-strip" id="moodGrid"></div>
+    </div>
+
+    <!-- Entry textarea -->
     <textarea class="journal-textarea" id="entryText"
       placeholder="What's on your mind? No filter needed. This is just for you. ✨"></textarea>
-    <div class="entry-footer">
+
+    <!-- Footer -->
+    <div class="write-footer">
       <span class="word-count" id="wordCount">0 words</span>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+      <div style="display:flex;gap:0.5rem">
         <button class="btn btn-ghost" onclick="clearEntry()">Clear</button>
-        <button class="btn btn-primary" id="saveBtn" onclick="saveEntry()">💾 Save Entry</button>
+        <button class="btn btn-primary" id="saveBtn" onclick="saveEntry()">💾 Save</button>
       </div>
     </div>
   </div>
 
-  <!-- ANALYSIS GRID -->
-  <div class="grid-3">
-    <div class="card" style="margin-bottom:0">
+  <!-- ══ PANEL 2: ENTRIES ══ -->
+  <div id="panel-entries" class="journal-panel">
+    <input class="search-input" type="search" id="entrySearch" placeholder="🔍  Search your entries..." oninput="renderHistory()" style="position:sticky;top:0;z-index:10;margin-bottom:0.75rem">
+    <div id="historyContent">
+      <div class="empty-state"><div class="icon">📖</div><p>Your entries live here. Start writing — even a few sentences counts.</p></div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL 3: TOOLS ══ -->
+  <div id="panel-tools" class="journal-panel">
+
+    <!-- THERAPY TOOLKIT -->
+    <div class="card">
+      <div class="card-title">💡 Therapy Toolkit</div>
+      <div id="therapyBanner" class="banner banner-purple" style="display:none">
+        <span>🤖</span><span id="therapyBannerText"></span>
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('techniques',this)">Techniques</button>
+        <button class="tab-btn" onclick="switchTab('cbt',this)">CBT</button>
+        <button class="tab-btn" onclick="switchTab('grounding',this)">Grounding</button>
+        <button class="tab-btn" onclick="switchTab('prompts',this)">Prompts</button>
+      </div>
+
+      <div id="tab-techniques"><div id="techniquesList"></div></div>
+
+      <div id="tab-cbt" style="display:none">
+        <div class="banner banner-purple" style="margin-bottom:1rem">
+          <span>📝</span>
+          <span>A thought record helps you catch, examine, and gently reframe unhelpful thinking. Fill in as much or as little as feels useful.</span>
+        </div>
+        <div id="cbtFields">
+          <div class="tr-field"><label>Situation — What happened?</label><textarea rows="2" placeholder="e.g. I sent an email and got a delayed reply..."></textarea></div>
+          <div class="tr-field"><label>Automatic Thought — What went through your mind?</label><textarea rows="2" placeholder="e.g. They must think I'm useless..."></textarea></div>
+          <div class="tr-field"><label>Emotion — What did you feel? (Rate 0–100%)</label><textarea rows="1" placeholder="e.g. Anxious 80%, Shame 60%..."></textarea></div>
+          <div class="tr-field"><label>Evidence FOR the thought</label><textarea rows="2" placeholder="e.g. The reply was late..."></textarea></div>
+          <div class="tr-field"><label>Evidence AGAINST the thought</label><textarea rows="2" placeholder="e.g. They always reply late. Busy week..."></textarea></div>
+          <div class="tr-field"><label>Alternative / Balanced Thought</label><textarea rows="2" placeholder="e.g. Many reasons for a delayed reply..."></textarea></div>
+          <div class="tr-field"><label>How do you feel now? Re-rate</label><textarea rows="1" placeholder="e.g. Anxious 35%, more grounded..."></textarea></div>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveCBTRecord()">💾 Save to Journal</button>
+          <button class="btn btn-ghost" onclick="clearCBT()">Clear</button>
+        </div>
+      </div>
+
+      <div id="tab-grounding" style="display:none">
+        <div class="banner banner-amber" style="margin-bottom:1rem">
+          <span>⚡</span>
+          <span>Use these when you feel overwhelmed, anxious, or disconnected. They work best when you actually <em>do</em> them.</span>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">🫁 Box Breathing (4-4-4-4)</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Activates your parasympathetic nervous system to slow your heart rate. Works in minutes.</p>
+            <ul class="technique-steps">
+              <li>Breathe IN for 4 counts (belly, not chest)</li>
+              <li>HOLD for 4 counts</li>
+              <li>Breathe OUT slowly for 4 counts</li>
+              <li>HOLD for 4 counts. Repeat 4–6 times.</li>
+            </ul>
+            <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="startBreath(event)">▶ Start guided timer</button>
+            <div id="boxBreathTimer" style="display:none">
+              <div id="breathPhase">IN</div>
+              <div id="breathCount">4</div>
+              <div class="breath-track"><div id="breathBar"></div></div>
+              <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="stopBreath(event)">⏹ Stop</button>
+            </div>
+          </div>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">👁️ 5-4-3-2-1 Grounding</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Brings you back to the present by engaging all five senses. Excellent for dissociation, spiralling thoughts, or panic.</p>
+            <ul class="technique-steps">
+              <li>Name <strong>5 things</strong> you can SEE</li>
+              <li>Name <strong>4 things</strong> you can TOUCH</li>
+              <li>Name <strong>3 things</strong> you can HEAR</li>
+              <li>Name <strong>2 things</strong> you can SMELL</li>
+              <li>Name <strong>1 thing</strong> you can TASTE</li>
+            </ul>
+            <p style="margin-top:0.5rem">Say them out loud if you can.</p>
+          </div>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">🧊 Cold Water Reset</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Based on the mammalian diving reflex — cold water on your face rapidly slows your heart rate.</p>
+            <ul class="technique-steps">
+              <li>Splash cold water on your face 3–5 times</li>
+              <li>Or hold your wrists under cold water for 30 seconds</li>
+              <li>Breathe slowly while you do it</li>
+            </ul>
+          </div>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">🦶 Body Scan</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Pulls attention from anxious thoughts into physical sensation. Great for dissociation or unnoticed tension.</p>
+            <ul class="technique-steps">
+              <li>Sit or lie comfortably. Close your eyes.</li>
+              <li>Start at your crown — notice any tension</li>
+              <li>Move slowly down: forehead, jaw, neck, shoulders</li>
+              <li>Chest, stomach, arms, hands, hips, legs, feet</li>
+              <li>Breathe into tension. Let it soften on the exhale.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="technique-card" onclick="toggleTechnique(this)">
+          <div class="technique-header"><div class="technique-title">🏡 Safe Place Visualisation</div><span class="chevron">▼</span></div>
+          <div class="technique-body">
+            <p>Your brain responds to vividly imagined safety almost like real safety. Build this slowly — it becomes a refuge.</p>
+            <ul class="technique-steps">
+              <li>Close your eyes. Breathe slowly.</li>
+              <li>Imagine a place where you feel completely safe — real or invented</li>
+              <li>Notice colours, light, temperature, sounds, smells</li>
+              <li>Spend 2–5 minutes there. Let your body relax.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-prompts" style="display:none">
+        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:1rem;line-height:1.6">Sometimes the blank page is the hardest part. Tap any prompt to write from it.</p>
+        <div id="promptsList"></div>
+        <button class="btn btn-ghost" style="margin-top:0.75rem;width:100%" onclick="renderPrompts()">🎲 New set of prompts</button>
+      </div>
+    </div>
+
+    <!-- RESOURCE LIBRARY -->
+    <div class="card">
+      <div class="card-title">📚 Resource Library</div>
+      <div class="tab-bar" id="resTabBar">
+        <button class="tab-btn active" onclick="switchResTab('apps',this)">Apps</button>
+        <button class="tab-btn" onclick="switchResTab('books',this)">Books</button>
+        <button class="tab-btn" onclick="switchResTab('practices',this)">Free Practices</button>
+        <button class="tab-btn" onclick="switchResTab('support',this)">Support Lines</button>
+      </div>
+      <div id="res-apps"><div class="resource-grid" id="resApps"></div></div>
+      <div id="res-books" style="display:none"><div class="resource-grid" id="resBooks"></div></div>
+      <div id="res-practices" style="display:none"><div class="resource-grid" id="resPractices"></div></div>
+      <div id="res-support" style="display:none"><div class="resource-grid" id="resSupport"></div></div>
+    </div>
+
+    <!-- IMPORT -->
+    <div class="card">
+      <div class="card-title">📥 Import TypingMind Chats</div>
+      <div class="banner banner-purple" style="margin-bottom:1rem">
+        <span>🔒</span>
+        <span>Your entries live only in <strong>your browser</strong>. Import stays local, always.</span>
+      </div>
+      <p style="font-size:0.84rem;color:var(--text2);line-height:1.6;margin-bottom:1rem">
+        Got TypingMind exports? Drop them in and I'll convert them to journal entries and run full analysis.
+      </p>
+      <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
+        <label class="btn btn-primary" style="cursor:pointer">
+          📂 Choose TypingMind JSON
+          <input type="file" id="importFileInput" accept=".json" multiple style="display:none" onchange="importTypingMind(this)">
+        </label>
+        <button class="btn btn-ghost" onclick="clearAllEntries()">🗑️ Clear all entries</button>
+        <span id="importStatus" style="font-size:0.8rem;color:var(--text3)"></span>
+      </div>
+      <div id="importLog" style="display:none;margin-top:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem;font-size:0.78rem;color:var(--text2);line-height:1.7;max-height:180px;overflow-y:auto"></div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL 4: INSIGHTS ══ -->
+  <div id="panel-insights" class="journal-panel">
+
+    <!-- Stats -->
+    <div class="stat-row" id="statsRow" style="margin-bottom:1rem">
+      <div class="stat-box"><div class="stat-num" id="statEntries">0</div><div class="stat-label">Entries</div></div>
+      <div class="stat-box"><div class="stat-num" id="statStreak">0</div><div class="stat-label">Streak 🔥</div></div>
+      <div class="stat-box"><div class="stat-num" id="statMood">—</div><div class="stat-label">Top Mood</div></div>
+      <div class="stat-box"><div class="stat-num" id="statWords">0</div><div class="stat-label">Words</div></div>
+    </div>
+
+    <!-- Pattern Radar -->
+    <div class="card">
       <div class="card-title">🔍 Pattern Radar</div>
       <div id="patternContent">
         <div class="empty-state"><div class="icon">🌱</div><p>Write a few entries and I'll start spotting what keeps coming up for you.</p></div>
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:0">
+    <!-- Cognitive Lens -->
+    <div class="card">
       <div class="card-title">🧩 Cognitive Lens</div>
       <div id="cognitiveContent">
         <div class="empty-state"><div class="icon">🔭</div><p>Your thinking patterns — like catastrophising or all-or-nothing thinking — will show up here.</p></div>
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:0">
+    <!-- Mood Chart -->
+    <div class="card">
       <div class="card-title">📈 Mood Over Time</div>
       <div id="moodContent">
         <div class="empty-state"><div class="icon">📊</div><p>Tag your moods as you write to see trends emerge.</p></div>
       </div>
     </div>
-  </div>
-  <div style="height:1.5rem"></div>
 
-  <!-- THERAPY TOOLKIT -->
-  <div class="card">
-    <div class="card-title">💡 Therapy Toolkit</div>
-    <div id="therapyBanner" class="banner banner-purple" style="display:none">
-      <span>🤖</span><span id="therapyBannerText"></span>
-    </div>
-
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('techniques',this)">Techniques</button>
-      <button class="tab-btn" onclick="switchTab('cbt',this)">CBT Record</button>
-      <button class="tab-btn" onclick="switchTab('grounding',this)">Grounding</button>
-      <button class="tab-btn" onclick="switchTab('prompts',this)">Prompts</button>
-    </div>
-
-    <!-- TECHNIQUES TAB -->
-    <div id="tab-techniques">
-      <div id="techniquesList"></div>
-    </div>
-
-    <!-- CBT RECORD TAB -->
-    <div id="tab-cbt" style="display:none">
-      <div class="banner banner-purple" style="margin-bottom:1rem">
-        <span>📝</span>
-        <span>A thought record helps you catch, examine, and gently reframe unhelpful thinking. Fill in as much or as little as feels useful — you don't have to do every section.</span>
-      </div>
-      <div id="cbtFields">
-        <div class="tr-field"><label>Situation — What happened? Where were you? Who was there?</label><textarea rows="2" placeholder="e.g. I sent an email and got a delayed reply..."></textarea></div>
-        <div class="tr-field"><label>Automatic Thought — What went through your mind?</label><textarea rows="2" placeholder="e.g. They must think I'm useless. I always mess things up..."></textarea></div>
-        <div class="tr-field"><label>Emotion — What did you feel? Rate intensity (0–100%)</label><textarea rows="1" placeholder="e.g. Anxious 80%, Shame 60%..."></textarea></div>
-        <div class="tr-field"><label>Evidence FOR the thought</label><textarea rows="2" placeholder="e.g. The reply was late. They seemed distracted last time..."></textarea></div>
-        <div class="tr-field"><label>Evidence AGAINST the thought</label><textarea rows="2" placeholder="e.g. They always reply late. It's been a busy week for everyone..."></textarea></div>
-        <div class="tr-field"><label>Alternative / Balanced Thought</label><textarea rows="2" placeholder="e.g. There are many reasons for a delayed reply. One email doesn't define my work..."></textarea></div>
-        <div class="tr-field"><label>How do you feel now? Re-rate the emotion</label><textarea rows="1" placeholder="e.g. Anxious 35%, more grounded..."></textarea></div>
-      </div>
-      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="saveCBTRecord()">💾 Save to Journal</button>
-        <button class="btn btn-ghost" onclick="clearCBT()">Clear</button>
-      </div>
-    </div>
-
-    <!-- GROUNDING TAB -->
-    <div id="tab-grounding" style="display:none">
-      <div class="banner banner-amber" style="margin-bottom:1rem">
-        <span>⚡</span>
-        <span>Use these when you feel overwhelmed, anxious, or disconnected. They work best when you actually <em>do</em> them rather than just reading them.</span>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">🫁 Box Breathing (4-4-4-4)</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Activates your parasympathetic nervous system to slow your heart rate. Works in minutes and you can do it anywhere.</p>
-          <ul class="technique-steps">
-            <li>Breathe IN for 4 counts (feel your belly expand, not just your chest)</li>
-            <li>HOLD for 4 counts</li>
-            <li>Breathe OUT slowly for 4 counts</li>
-            <li>HOLD for 4 counts</li>
-            <li>Repeat 4–6 times. Notice your heart rate slow.</li>
-          </ul>
-          <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="startBreath(event)">▶ Start guided timer</button>
-          <div id="boxBreathTimer" style="display:none">
-            <div id="breathPhase">IN</div>
-            <div id="breathCount">4</div>
-            <div class="breath-track"><div id="breathBar"></div></div>
-            <button class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.75rem" onclick="stopBreath(event)">⏹ Stop</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">👁️ 5-4-3-2-1 Grounding</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Brings you back to the present moment by engaging all five senses. Excellent for dissociation, spiralling thoughts, or panic.</p>
-          <ul class="technique-steps">
-            <li>Name <strong>5 things</strong> you can SEE right now</li>
-            <li>Name <strong>4 things</strong> you can TOUCH or feel</li>
-            <li>Name <strong>3 things</strong> you can HEAR</li>
-            <li>Name <strong>2 things</strong> you can SMELL (or two you love)</li>
-            <li>Name <strong>1 thing</strong> you can TASTE</li>
-          </ul>
-          <p style="margin-top:0.5rem">Say them out loud if you can. It helps more than you'd think.</p>
-        </div>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">🧊 Cold Water Reset</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Based on the mammalian diving reflex — cold water on your face rapidly slows your heart rate. Surprisingly fast and effective for acute distress or a very bad moment.</p>
-          <ul class="technique-steps">
-            <li>Run cold water and splash your face 3–5 times</li>
-            <li>Or hold your wrists under cold running water for 30 seconds</li>
-            <li>Breathe slowly while you do it</li>
-            <li>Notice the physical shift — it's real</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">🦶 Body Scan</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Pulls attention from anxious thoughts into physical sensation. Particularly useful for dissociation or when you're carrying tension you didn't notice.</p>
-          <ul class="technique-steps">
-            <li>Sit or lie comfortably. Close your eyes if that feels okay.</li>
-            <li>Start at the crown of your head — notice any tension or tingling</li>
-            <li>Slowly move down: forehead, jaw (is it clenched?), neck, shoulders</li>
-            <li>Continue to chest, stomach, arms, hands</li>
-            <li>Down to hips, thighs, calves, feet, toes</li>
-            <li>Wherever you notice tension: breathe into it, let it soften on the exhale</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="technique-card" onclick="toggleTechnique(this)">
-        <div class="technique-header">
-          <div class="technique-title">🏡 Safe Place Visualisation</div>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="technique-body">
-          <p>Your brain responds to vividly imagined safety almost the same way it responds to real safety. Build this slowly so it feels real — it becomes a refuge you can return to anytime.</p>
-          <ul class="technique-steps">
-            <li>Close your eyes. Breathe slowly.</li>
-            <li>Imagine a place where you feel completely safe and calm — real or invented, no rules</li>
-            <li>Notice the colours, the light, the temperature</li>
-            <li>What can you hear? What does it smell like? What's underfoot?</li>
-            <li>Spend 2–5 minutes just being there. Let your body relax.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- PROMPTS TAB -->
-    <div id="tab-prompts" style="display:none">
-      <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:1rem;line-height:1.6">Sometimes the blank page is the hardest part. Click any prompt to start writing from it.</p>
-      <div id="promptsList"></div>
-      <button class="btn btn-ghost" style="margin-top:0.75rem;width:100%" onclick="renderPrompts()">🎲 New set of prompts</button>
-    </div>
   </div>
 
-  <!-- RESOURCE LIBRARY -->
-  <div class="card">
-    <div class="card-title">📚 Resource Library</div>
-    <div class="tab-bar" id="resTabBar">
-      <button class="tab-btn active" onclick="switchResTab('apps',this)">Apps</button>
-      <button class="tab-btn" onclick="switchResTab('books',this)">Books</button>
-      <button class="tab-btn" onclick="switchResTab('practices',this)">Free Practices</button>
-      <button class="tab-btn" onclick="switchResTab('support',this)">Support Lines</button>
-    </div>
-    <div id="res-apps"><div class="resource-grid" id="resApps"></div></div>
-    <div id="res-books" style="display:none"><div class="resource-grid" id="resBooks"></div></div>
-    <div id="res-practices" style="display:none"><div class="resource-grid" id="resPractices"></div></div>
-    <div id="res-support" style="display:none"><div class="resource-grid" id="resSupport"></div></div>
-  </div>
-
-  <!-- IMPORT CARD -->
-  <div class="card">
-    <div class="card-title">📥 Import TypingMind Chats</div>
-    <div class="banner banner-purple" style="margin-bottom:1rem">
-      <span>🔒</span>
-      <span>Your entries are stored only in <strong>your browser</strong> — no one else who visits this site can see them. Import stays local, always.</span>
-    </div>
-    <p style="font-size:0.84rem;color:var(--text-secondary);line-height:1.6;margin-bottom:1rem">
-      Got TypingMind chat exports? Drop them in and I'll pull out your messages, convert them to journal entries, and run the pattern analysis on everything. Your data never leaves your browser.
-    </p>
-    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
-      <label class="btn btn-primary" style="cursor:pointer">
-        📂 Choose TypingMind JSON files
-        <input type="file" id="importFileInput" accept=".json" multiple style="display:none" onchange="importTypingMind(this)">
-      </label>
-      <button class="btn btn-ghost" onclick="clearAllEntries()">🗑️ Clear all entries</button>
-      <span id="importStatus" style="font-size:0.8rem;color:var(--text-muted)"></span>
-    </div>
-    <div id="importLog" style="display:none;margin-top:1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:1rem;font-size:0.78rem;color:var(--text-secondary);line-height:1.7;max-height:180px;overflow-y:auto"></div>
-  </div>
-
-  <!-- ENTRY HISTORY -->
-  <div class="card">
-    <div class="card-title">📋 Entry History</div>
-    <input class="search-input" type="search" id="entrySearch" placeholder="Search your entries..." oninput="renderHistory()">
-    <div id="historyContent">
-      <div class="empty-state"><div class="icon">📖</div><p>Your entries live here. Start writing — even a few sentences counts.</p></div>
-    </div>
-  </div>
-
+</div><!-- /journal-panels -->
 </main>
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bottom-nav">
+  <button class="bnav-btn active" id="bnav-write" onclick="switchPanel('write')">
+    <span class="bnav-icon">✍️</span>
+    <span>Write</span>
+  </button>
+  <button class="bnav-btn" id="bnav-entries" onclick="switchPanel('entries')">
+    <span class="bnav-icon">📓</span>
+    <span>Entries</span>
+  </button>
+  <button class="bnav-btn" id="bnav-tools" onclick="switchPanel('tools')">
+    <span class="bnav-icon">🛠️</span>
+    <span>Tools</span>
+  </button>
+  <button class="bnav-btn" id="bnav-insights" onclick="switchPanel('insights')">
+    <span class="bnav-icon">📊</span>
+    <span>Insights</span>
+  </button>
+</nav>
 
 <!-- CONFIRM DELETE -->
 <div class="confirm-overlay" id="confirmOverlay">
@@ -797,7 +863,7 @@
     <p>Delete this entry? This can't be undone and I won't judge you, but I will note: your words have value.</p>
     <div class="confirm-actions">
       <button class="btn btn-ghost" onclick="closeConfirm()">Keep it</button>
-      <button class="btn" style="background:var(--accent-red);color:white" onclick="confirmDelete()">Delete</button>
+      <button class="btn" style="background:var(--red);color:white" onclick="confirmDelete()">Delete</button>
     </div>
   </div>
 </div>
@@ -1101,6 +1167,18 @@ let breathCount = 4;
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
 
+// ─── PANEL NAVIGATION ──────────────────────────────────────────────────────
+
+function switchPanel(name) {
+  document.querySelectorAll('.journal-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('bnav-' + name).classList.add('active');
+  // Scroll to top of newly active panel
+  const panel = document.getElementById('panel-' + name);
+  panel.scrollTop = 0;
+}
+
 function init() {
   loadEntries();
   renderMoodGrid();
@@ -1108,6 +1186,8 @@ function init() {
   renderResources();
   renderPrompts();
   renderAll();
+  switchPanel('write');
+  checkFeelingCheckin();
 }
 
 function loadEntries() {
@@ -1117,6 +1197,9 @@ function loadEntries() {
 
 function saveEntries() {
   localStorage.setItem('jie_entries', JSON.stringify(entries));
+  if (window.fbUser && window.fbSaveDoc) {
+    window.fbSaveDoc('journal', { jie_entries: entries });
+  }
 }
 
 // ─── MOOD GRID ─────────────────────────────────────────────────────────────
@@ -1147,7 +1230,7 @@ function saveEntry() {
   const text = document.getElementById('entryText').value.trim();
   if (!text) {
     const ta = document.getElementById('entryText');
-    ta.style.borderColor = 'var(--accent-amber)';
+    ta.style.borderColor = 'var(--amber)';
     ta.placeholder = 'Write something first — even a few words. ✨';
     setTimeout(() => { ta.style.borderColor = ''; }, 2000);
     return;
@@ -1171,7 +1254,7 @@ function saveEntry() {
 
   const btn = document.getElementById('saveBtn');
   btn.textContent = '✅ Saved!';
-  btn.style.background = 'var(--accent-green)';
+  btn.style.background = 'var(--green)';
   setTimeout(() => { btn.textContent = '💾 Save Entry'; btn.style.background = ''; }, 2200);
 
   renderAll();
@@ -1270,7 +1353,7 @@ function renderAnalysis() {
   const maxP = sortedPatterns[0]?.[1].score || 1;
   if (sortedPatterns.length) {
     document.getElementById('patternContent').innerHTML = `
-      <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.85rem">Based on ${entries.length} entr${entries.length!==1?'ies':'y'}</p>
+      <p style="font-size:0.72rem;color:var(--text3);margin-bottom:0.85rem">Based on ${entries.length} entr${entries.length!==1?'ies':'y'}</p>
       ${sortedPatterns.map(([,p]) => `
         <div style="margin-bottom:0.8rem">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem">
@@ -1289,7 +1372,7 @@ function renderAnalysis() {
   const sortedCog = Object.entries(cogScores).sort((a,b)=>b[1].score-a[1].score).slice(0,4);
   if (sortedCog.length) {
     document.getElementById('cognitiveContent').innerHTML = `
-      <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.85rem">Thinking patterns showing up in your writing</p>
+      <p style="font-size:0.72rem;color:var(--text3);margin-bottom:0.85rem">Thinking patterns showing up in your writing</p>
       ${sortedCog.map(([,p]) => `
         <div style="margin-bottom:1rem">
           <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.15rem">
@@ -1297,7 +1380,7 @@ function renderAnalysis() {
             <span style="font-size:0.82rem;font-weight:600">${p.label}</span>
             <span class="chip ${p.color}" style="font-size:0.62rem;margin-left:auto">${p.score}×</span>
           </div>
-          <p style="font-size:0.72rem;color:var(--text-muted);margin-left:1.4rem;margin-bottom:0.3rem">${p.desc}</p>
+          <p style="font-size:0.72rem;color:var(--text3);margin-left:1.4rem;margin-bottom:0.3rem">${p.desc}</p>
           <div class="insight-box" style="margin-left:1.4rem">💡 ${p.reframe}</div>
         </div>
       `).join('')}
@@ -1331,7 +1414,7 @@ function renderMoodChart() {
   const recent = entries.slice(0,14).reverse();
 
   document.getElementById('moodContent').innerHTML = `
-    <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.4rem">Most frequent moods</p>
+    <p style="font-size:0.72rem;color:var(--text3);margin-bottom:0.4rem">Most frequent moods</p>
     <div class="mini-chart">
       ${top5.map(([id,count]) => {
         const c = moodColors[id]||'#8b5cf6';
@@ -1348,7 +1431,7 @@ function renderMoodChart() {
       }).join('')}
     </div>
     <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border)">
-      <p style="font-size:0.68rem;color:var(--text-muted);margin-bottom:0.35rem">Last ${Math.min(entries.length,14)} entries</p>
+      <p style="font-size:0.68rem;color:var(--text3);margin-bottom:0.35rem">Last ${Math.min(entries.length,14)} entries</p>
       <div style="display:flex;gap:3px;flex-wrap:wrap">
         ${recent.map(e => {
           const first = e.moods[0];
@@ -1385,9 +1468,9 @@ function renderTherapySection() {
 
   let html = '';
   if (relevant.length) {
-    html += `<p style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-secondary);font-weight:700;margin-bottom:0.6rem">✨ Suggested for you</p>`;
+    html += `<p style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text2);font-weight:700;margin-bottom:0.6rem">✨ Suggested for you</p>`;
     relevant.forEach(id => { html += makeTechHTML(TECHNIQUES[id], true); });
-    html += `<p style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-muted);font-weight:700;margin:1rem 0 0.6rem">All techniques</p>`;
+    html += `<p style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text3);font-weight:700;margin:1rem 0 0.6rem">All techniques</p>`;
   }
   others.forEach(id => { html += makeTechHTML(TECHNIQUES[id], false); });
   document.getElementById('techniquesList').innerHTML = html;
@@ -1494,7 +1577,7 @@ function saveCBTRecord() {
 
   const btn = event.target;
   btn.textContent = '✅ Saved!';
-  btn.style.background = 'var(--accent-green)';
+  btn.style.background = 'var(--green)';
   setTimeout(() => { btn.textContent = '💾 Save to Journal'; btn.style.background = ''; }, 2200);
 }
 
@@ -1567,12 +1650,12 @@ function renderHistory() {
           <span class="entry-date">${date}</span>
           ${isCBT?'<span class="chip chip-purple" style="font-size:0.62rem">📝 CBT Record</span>':''}
           ${moodChips}
-          <span style="font-size:0.68rem;color:var(--text-muted);margin-left:auto">${words}w</span>
+          <span style="font-size:0.68rem;color:var(--text3);margin-left:auto">${words}w</span>
         </div>
         <div class="entry-text entry-clamp">${safeHTML(e.text)}</div>
         <div class="entry-actions">
           <button class="btn-tiny expand" onclick="expandEntry('${e.id}',this)">Read more</button>
-          <button class="btn-tiny" style="border-color:var(--accent-red);color:var(--accent-red)" onclick="requestDelete('${e.id}')">Delete</button>
+          <button class="btn-tiny" style="border-color:var(--red);color:var(--red)" onclick="requestDelete('${e.id}')">Delete</button>
         </div>
       </div>
     `;
@@ -1724,7 +1807,7 @@ function importTypingMind(input) {
         renderAll();
 
         const msg = `✨ Imported ${imported} messages across ${files.length} file${files.length!==1?'s':''}${skipped?' ('+skipped+' duplicates skipped)':''}.`;
-        log.innerHTML += `<br><strong style="color:var(--accent-purple)">${msg}</strong>`;
+        log.innerHTML += `<br><strong style="color:var(--purple)">${msg}</strong>`;
         status.textContent = msg;
         input.value = ''; // reset so same file can be re-chosen
       }
@@ -1742,8 +1825,69 @@ function clearAllEntries() {
   document.getElementById('importStatus').textContent = 'All entries cleared.';
 }
 
+// ─── FEELINGS CHECK-IN INTEGRATION ─────────────────────────────────────────
+function checkFeelingCheckin() {
+  const raw = localStorage.getItem('mc_feeling_checkin');
+  if (!raw) return;
+  try {
+    const checkin = JSON.parse(raw);
+    const banner = document.getElementById('feelingCheckinBanner');
+    const text = document.getElementById('feelingCheckinText');
+    let label = `${checkin.icon} You identified: ${checkin.emotion}`;
+    if (checkin.sensations && checkin.sensations.length > 0) {
+      label += ` (${checkin.sensations.slice(0,3).join(', ')}${checkin.sensations.length > 3 ? '…' : ''})`;
+    }
+    text.textContent = label;
+    banner.style.display = 'flex';
+  } catch(e) {}
+}
+
+function insertFeelingCheckin() {
+  const raw = localStorage.getItem('mc_feeling_checkin');
+  if (!raw) return;
+  try {
+    const checkin = JSON.parse(raw);
+    const textarea = document.getElementById('entryText');
+    const ts = new Date(checkin.timestamp);
+    const timeStr = ts.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    let insert = `\n[Feeling check-in @ ${timeStr}]\nEmotion: ${checkin.icon} ${checkin.emotion}`;
+    if (checkin.sensations && checkin.sensations.length > 0) {
+      insert += `\nBody: ${checkin.sensations.join(', ')}`;
+    }
+    insert += '\n\n';
+    const pos = textarea.selectionStart || textarea.value.length;
+    textarea.value = textarea.value.slice(0, pos) + insert + textarea.value.slice(pos);
+    textarea.dispatchEvent(new Event('input'));
+    textarea.focus();
+    textarea.setSelectionRange(pos + insert.length, pos + insert.length);
+    dismissCheckin();
+  } catch(e) {}
+}
+
+function dismissCheckin() {
+  document.getElementById('feelingCheckinBanner').style.display = 'none';
+  localStorage.removeItem('mc_feeling_checkin');
+}
+
 // ─── GO ────────────────────────────────────────────────────────────────────
 init();
+
+window.addEventListener('fbSyncComplete', () => { loadEntries(); renderAll(); });
+</script>
+<script>
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('visible');
+    document.getElementById('hamburgerBtn').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('visible');
+    document.getElementById('hamburgerBtn').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
 </script>
 </body>
 </html>

@@ -99,7 +99,12 @@ function init() {
     }
 }
 
-function saveState() { localStorage.setItem('missionControl', JSON.stringify(state)); }
+function saveState() {
+    localStorage.setItem('missionControl', JSON.stringify(state));
+    if (window.fbUser && window.fbSaveDoc) {
+        window.fbSaveDoc('finance', { missionControl: state });
+    }
+}
 
 function loadState() {
     try {
