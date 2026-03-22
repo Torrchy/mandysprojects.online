@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>mp &middot; north star</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b0b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .ns-header {
+      padding: 1.5rem 0 0.5rem;
+      text-align: center;
+    }
+    .ns-header .page-subtitle {
+      margin-top: 0.4rem;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.5;
+    }
+
+    .ns-tabs {
+      display: flex;
+      gap: 6px;
+      margin: 1rem 0;
+    }
+    .ns-tab {
+      flex: 1;
+      padding: 0.55rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      text-align: center;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text3);
+      transition: all 0.25s;
+    }
+    .ns-tab:hover { border-color: var(--border-warm); color: var(--text2); }
+    .ns-tab.active {
+      border-color: rgba(155,142,196,0.3);
+      color: var(--lavender);
+      background: var(--lavender-dim);
+    }
+
+    .ns-panel { display: none; }
+    .ns-panel.active { display: block; }
+
+    .vision-card {
+      background: linear-gradient(135deg, var(--surface), rgba(155,142,196,0.04));
+      border: 1px solid rgba(155,142,196,0.15);
+      border-radius: var(--r);
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+    .vision-text {
+      font-size: 0.92rem;
+      color: var(--text);
+      line-height: 1.7;
+      font-weight: 500;
+    }
+    .vision-years {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--lavender);
+      margin-bottom: 0.4rem;
+    }
+    .vision-label {
+      font-size: 0.62rem;
+      color: var(--text3);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.7rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .checklist-check {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--text4);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1px;
+    }
+    .checklist-item.checked .checklist-check {
+      background: var(--lavender);
+      border-color: var(--lavender);
+    }
+    .checklist-check svg {
+      width: 10px; height: 10px;
+      stroke: var(--bg);
+      stroke-width: 3;
+      fill: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .checklist-item.checked .checklist-check svg { opacity: 1; }
+    .checklist-text {
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .checklist-item.checked .checklist-text {
+      color: var(--text2);
+    }
+    .checklist-hint {
+      font-size: 0.65rem;
+      color: var(--text3);
+      margin-top: 0.15rem;
+      line-height: 1.4;
+    }
+
+    /* Safety setup section */
+    .safety-setup {
+      background: var(--surface);
+      border: 1px solid rgba(92,184,138,0.15);
+      border-radius: var(--r);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .safety-setup-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--safe);
+      margin-bottom: 0.5rem;
+    }
+    .safety-setup-desc {
+      font-size: 0.72rem;
+      color: var(--text2);
+      line-height: 1.55;
+      margin-bottom: 1rem;
+    }
+
+    .gentle-note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1rem 1.15rem;
+      margin-top: 1.25rem;
+    }
+    .gentle-note-text {
+      font-size: 0.78rem;
+      color: var(--text2);
+      line-height: 1.65;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="safety-bar" id="safetyBar"></div>
+
+  <div class="page">
+    <div class="ns-header fade-up">
+      <a href="index.html" style="font-size:0.72rem;color:var(--text3);text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-bottom:0.75rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
+        Home
+      </a>
+      <div class="page-title">North Star</div>
+      <div class="page-subtitle">Where all of this is heading. Not a pressure. Just a compass.</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="ns-tabs fade-up" style="animation-delay:0.06s">
+      <button class="ns-tab active" data-tab="journey">Journey</button>
+      <button class="ns-tab" data-tab="learn">Learn</button>
+      <button class="ns-tab" data-tab="ready">Readiness</button>
+      <button class="ns-tab" data-tab="settings">Settings</button>
+    </div>
+
+    <!-- ═══ JOURNEY ═══ -->
+    <div class="ns-panel active" id="ns-journey">
+      <div class="vision-card fade-up" style="animation-delay:0.1s">
+        <div class="vision-label">The direction</div>
+        <div class="vision-text">
+          One day, you will foster a child who needs what you needed.<br>
+          And you will know exactly what to do.
+        </div>
+      </div>
+
+      <div class="vision-card fade-up" style="animation-delay:0.15s" id="yearCard">
+        <div class="vision-label">Timeline</div>
+        <div class="vision-years" id="yearsLeft">~3</div>
+        <div style="font-size:0.72rem;color:var(--text2);">years, give or take</div>
+        <div style="font-size:0.62rem;color:var(--text3);margin-top:0.3rem;">This is approximate. There's no rush. The healing is the work.</div>
+      </div>
+
+      <div class="section-head">
+        <span class="label">Your timeline</span>
+      </div>
+
+      <div class="timeline stagger" id="timelineEl">
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Recognised the pattern</div>
+          <div class="timeline-desc">You saw what happened to you. You named it. That was the hardest step.</div>
+        </div>
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Started therapy</div>
+          <div class="timeline-desc">Found Anahi. Built the relationship. Showed up even when it was hard.</div>
+        </div>
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Found medication that works</div>
+          <div class="timeline-desc">Sertraline 100mg. Your brain chemistry isn't a character flaw -- it's a chemical you needed.</div>
+        </div>
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Built your anchors</div>
+          <div class="timeline-desc">Morning coffee. Evening shower. Steak Saturday. The stretch. You made your own safety.</div>
+        </div>
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Entered the IVA</div>
+          <div class="timeline-desc">Faced the financial reality. Made a plan. Stuck to every single payment.</div>
+        </div>
+        <div class="timeline-item current">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Healing in progress</div>
+          <div class="timeline-desc">Tracking, writing, dancing, running, art, building this app. All of it counts.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">IVA completion</div>
+          <div class="timeline-desc">Financial freedom. The debt resolved. The weight lifted.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Stability assessment</div>
+          <div class="timeline-desc">Demonstrating stable housing, income, and emotional readiness.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Foster care application</div>
+          <div class="timeline-desc">Initial enquiry, information sessions, formal application.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Assessment & training</div>
+          <div class="timeline-desc">Skills to Foster course. Home assessment. Panel approval.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Your first placement</div>
+          <div class="timeline-desc">A child who needs what you needed. And you'll be ready.</div>
+        </div>
+      </div>
+
+      <div class="gentle-note">
+        <div class="gentle-note-text">
+          "This timeline is not a deadline. It's a direction. Some steps will take longer than you expect. Some will happen faster. The point isn't speed. The point is that you're walking."
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LEARN ═══ -->
+    <div class="ns-panel" id="ns-learn">
+      <div class="section-head">
+        <span class="label">Understanding the process</span>
+      </div>
+
+      <div class="expandable" id="exp1">
+        <div class="expandable-header" onclick="toggleExpand('exp1')">
+          <span class="expandable-title">Who can foster?</span>
+          <svg class="expandable-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="expandable-body">
+          <div class="expandable-content">
+            Almost anyone over 21 can apply to foster in the UK. You don't need to own your home, be married, or have children of your own. Single people, people who rent, people with mental health histories -- all can and do foster successfully. What matters is your capacity to provide a stable, caring environment. Your own experience of adversity can be a strength, not a disqualification.
+          </div>
+        </div>
+      </div>
+
+      <div class="expandable" id="exp2">
+        <div class="expandable-header" onclick="toggleExpand('exp2')">
+          <span class="expandable-title">The assessment process</span>
+          <svg class="expandable-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="expandable-body">
+          <div class="expandable-content">
+            The process typically takes 4-6 months. A social worker visits your home multiple times, explores your background, childhood, relationships, and motivation. They're not looking for perfection -- they're looking for self-awareness, resilience, and capacity for empathy. Being in therapy and having done the healing work you've done is seen as a positive, not a concern. They want people who understand themselves.
+          </div>
+        </div>
+      </div>
+
+      <div class="expandable" id="exp3">
+        <div class="expandable-header" onclick="toggleExpand('exp3')">
+          <span class="expandable-title">Skills to Foster training</span>
+          <svg class="expandable-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="expandable-body">
+          <div class="expandable-content">
+            Before approval, you'll complete a training course (usually called "Skills to Foster" or similar). It covers child development, attachment theory, managing challenging behaviour, working with birth families, and self-care. Many of the concepts -- attachment, nervous system regulation, trauma responses -- are things you already understand from your own journey. You'll likely find you know more than you expect.
+          </div>
+        </div>
+      </div>
+
+      <div class="expandable" id="exp4">
+        <div class="expandable-header" onclick="toggleExpand('exp4')">
+          <span class="expandable-title">Types of foster care</span>
+          <svg class="expandable-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="expandable-body">
+          <div class="expandable-content">
+            <strong>Emergency:</strong> Short-notice placements (hours/days) for children in immediate need.<br><br>
+            <strong>Short-term:</strong> Weeks to months while a longer-term plan is made.<br><br>
+            <strong>Long-term:</strong> Providing a stable home for years, sometimes until adulthood.<br><br>
+            <strong>Respite:</strong> Giving other foster carers a break -- short stays, usually planned.<br><br>
+            <strong>Specialist:</strong> For children with specific needs, disabilities, or complex trauma histories.<br><br>
+            You get to choose the type that fits your life and capacity. There's no obligation to do everything.
+          </div>
+        </div>
+      </div>
+
+      <div class="expandable" id="exp5">
+        <div class="expandable-header" onclick="toggleExpand('exp5')">
+          <span class="expandable-title">Financial support</span>
+          <svg class="expandable-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="expandable-body">
+          <div class="expandable-content">
+            Foster carers receive a fostering allowance to cover the cost of caring for a child, plus a fee/reward element for your time and skills. Rates vary by local authority and the child's needs but typically range from around 350-700+ per week. The first 10,000 per year of qualifying care relief is tax-free. Fostering can be a viable way to support yourself while doing meaningful work.
+          </div>
+        </div>
+      </div>
+
+      <div class="expandable" id="exp6">
+        <div class="expandable-header" onclick="toggleExpand('exp6')">
+          <span class="expandable-title">Support available to you</span>
+          <svg class="expandable-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="expandable-body">
+          <div class="expandable-content">
+            As a foster carer, you won't be alone. You'll have a supervising social worker, access to training, peer support groups, and often a 24/7 helpline. Many agencies provide therapeutic support for both you and the child. The support network is designed to ensure you can sustain this work without burning out. You're not expected to do it alone -- and the fact that you already know how to ask for help (hello, Anahi) is a strength.
+          </div>
+        </div>
+      </div>
+
+      <div class="section-head mt-3">
+        <span class="label">Useful resources</span>
+      </div>
+
+      <div class="card-stack">
+        <div class="resource-card" onclick="window.open('https://www.gov.uk/foster-carers','_blank')">
+          <div class="resource-title">GOV.UK: Foster carers</div>
+          <div class="resource-desc">Official government guidance on becoming a foster carer, rights, and responsibilities.</div>
+          <div class="resource-tag">Official</div>
+        </div>
+        <div class="resource-card" onclick="window.open('https://www.thefosteringnetwork.org.uk','_blank')">
+          <div class="resource-title">The Fostering Network</div>
+          <div class="resource-desc">UK's leading fostering charity. Information, training resources, and community.</div>
+          <div class="resource-tag">Charity</div>
+        </div>
+        <div class="resource-card" onclick="window.open('https://corambaaf.org.uk','_blank')">
+          <div class="resource-title">CoramBAAF</div>
+          <div class="resource-desc">Leading membership organisation for adoption and fostering. Research, practice guides, and training.</div>
+          <div class="resource-tag">Research</div>
+        </div>
+        <div class="resource-card" onclick="window.open('https://www.fosterline.info','_blank')">
+          <div class="resource-title">Fosterline</div>
+          <div class="resource-desc">Free, confidential advice line for anyone interested in fostering or currently fostering. 0800 040 7675.</div>
+          <div class="resource-tag">Helpline</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ READINESS ═══ -->
+    <div class="ns-panel" id="ns-ready">
+      <div class="card mb-2" style="border-color:rgba(155,142,196,0.15)">
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.4rem;">Readiness is not perfection</div>
+        <div style="font-size:0.72rem;color:var(--text2);line-height:1.55;">
+          This isn't a checklist of things you must complete before you're "allowed." It's a set of foundations. Some you've already built. Some are in progress. None require perfection -- just honest progress.
+        </div>
+      </div>
+
+      <div id="checklistEl"></div>
+
+      <div class="gentle-note mt-2">
+        <div class="gentle-note-text">
+          "You don't check every box and then become ready. You grow into readiness gradually, and one day you notice you're already there."
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS (Safety bar config) ═══ -->
+    <div class="ns-panel" id="ns-settings">
+      <div class="safety-setup" id="safety-setup">
+        <div class="safety-setup-title">Safety Status Bar</div>
+        <div class="safety-setup-desc">
+          This configures the bar at the top of every page. It's a sealed verdict -- once set, you can't accidentally open it into a calculator or spreadsheet. It just tells you the truth.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Months covered (financially)</label>
+          <input class="glass-input" id="safetyMonths" type="text" placeholder="e.g. 4" />
+          <div class="form-hint">How many months of expenses are you covered for right now?</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Case status</label>
+          <input class="glass-input" id="safetyCase" type="text" placeholder="e.g. Case closed" />
+          <div class="form-hint">Whatever legal/financial situation your brain reopens at 11pm.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Custom safety message (optional)</label>
+          <input class="glass-input" id="safetyCustom" type="text" placeholder="e.g. IVA on track. All payments made." />
+          <div class="form-hint">Any additional truth you want the bar to tell you.</div>
+        </div>
+
+        <button class="btn btn-sage btn-full" id="saveSafety">Save safety status</button>
+        <div class="form-hint text-center mt-1">This locks the display. You can update it here anytime.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-group">
+        <label class="form-label">Estimated years to fostering goal</label>
+        <input class="glass-input" id="nsYears" type="number" min="1" max="20" placeholder="3" style="width:100px" />
+        <div class="form-hint">Approximate. Just a compass bearing, not a deadline.</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="saveYears">Update</button>
+
+      <div class="divider"></div>
+
+      <div class="form-group">
+        <label class="form-label">Reset Studio PIN</label>
+        <div class="form-hint">This will clear your PIN and ask you to set a new one next time you open the Studio.</div>
+        <button class="btn btn-ghost btn-sm mt-1" id="resetPin" style="color:var(--danger);border-color:rgba(212,123,123,0.2);">Reset PIN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dock -->
+  <nav class="dock">
+    <a class="dock-item" href="index.html">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+      <span>Home</span>
+    </a>
+    <a class="dock-item" href="anchors.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/><path d="M5 12H2a10 10 0 0020 0h-3"/></svg>
+      <span>Anchors</span>
+    </a>
+    <a class="dock-item spiral-btn" href="spiral.html">
+      <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+    </a>
+    <a class="dock-item" href="magpie.html">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Magpie</span>
+    </a>
+    <a class="dock-item" href="pets.html">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none"/></svg>
+      <span>Pets</span>
+    </a>
+  </nav>
+
+  <script src="sanctuary.js"></script>
+  <script>
+    // ── Tab switching ────────────────────────
+    document.querySelectorAll('.ns-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.ns-tab').forEach(function (t) { t.classList.remove('active'); });
+        document.querySelectorAll('.ns-panel').forEach(function (p) { p.classList.remove('active'); });
+        tab.classList.add('active');
+        document.getElementById('ns-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // ── Hash navigation (from safety bar click) ──
+    if (window.location.hash === '#safety-setup') {
+      document.querySelectorAll('.ns-tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.ns-panel').forEach(function (p) { p.classList.remove('active'); });
+      document.querySelector('[data-tab="settings"]').classList.add('active');
+      document.getElementById('ns-settings').classList.add('active');
+    }
+
+    // ── Expand/collapse ──────────────────────
+    window.toggleExpand = function (id) {
+      document.getElementById(id).classList.toggle('open');
+    };
+
+    // ── Years card ───────────────────────────
+    var nsData = sLoad(S_KEYS.northStar, { years: 3, checklist: {} });
+    document.getElementById('yearsLeft').textContent = '~' + (nsData.years || 3);
+
+    document.getElementById('nsYears').value = nsData.years || 3;
+    document.getElementById('saveYears').addEventListener('click', function () {
+      var y = parseInt(document.getElementById('nsYears').value) || 3;
+      nsData.years = y;
+      sSave(S_KEYS.northStar, nsData);
+      document.getElementById('yearsLeft').textContent = '~' + y;
+      sToast('Updated.');
+    });
+
+    // ── Safety bar config ────────────────────
+    var safety = sLoad(S_KEYS.safety, {});
+    document.getElementById('safetyMonths').value = safety.monthsCovered || '';
+    document.getElementById('safetyCase').value = safety.caseStatus || '';
+    document.getElementById('safetyCustom').value = safety.custom || '';
+
+    document.getElementById('saveSafety').addEventListener('click', function () {
+      var months = document.getElementById('safetyMonths').value.trim();
+      var caseStatus = document.getElementById('safetyCase').value.trim();
+      var custom = document.getElementById('safetyCustom').value.trim();
+
+      var data = {
+        configured: true,
+        monthsCovered: months,
+        caseStatus: caseStatus,
+        custom: custom,
+        updatedAt: new Date().toISOString()
+      };
+      sSave(S_KEYS.safety, data);
+      sToast('Safety status sealed.');
+
+      // Re-render the safety bar on this page
+      var bar = document.getElementById('safetyBar');
+      bar.classList.remove('unconfigured');
+      bar.style.cursor = 'default';
+      bar.onclick = null;
+      var parts = ['You are <strong>safe</strong> right now.'];
+      if (months) parts.push('<strong>' + sEsc(months) + '</strong> months covered.');
+      if (caseStatus) parts.push(sEsc(caseStatus) + '.');
+      if (custom) parts.push(sEsc(custom));
+      bar.innerHTML = '<div class="safety-dot"></div><span class="safety-text">' + parts.join(' ') + '</span>';
+    });
+
+    // ── Readiness checklist ──────────────────
+    var CHECKLIST = [
+      { id: 'therapy', text: 'Ongoing therapy relationship', hint: 'You have Anahi. This one\'s done.' },
+      { id: 'medication', text: 'Stable medication (if applicable)', hint: 'Sertraline 100mg. Working as intended.' },
+      { id: 'finance', text: 'Financial stability / IVA completion', hint: 'In progress. Every payment made.' },
+      { id: 'housing', text: 'Stable housing situation', hint: 'A place that feels like yours, with room for one more.' },
+      { id: 'support', text: 'Support network in place', hint: 'People you trust. Doesn\'t have to be a big list.' },
+      { id: 'selfcare', text: 'Consistent self-care routines', hint: 'Your anchors. The rituals you built yourself.' },
+      { id: 'emotional', text: 'Emotional regulation tools', hint: 'You have the spiral kit, the breathwork, the grounding. You built these.' },
+      { id: 'understanding', text: 'Understanding of trauma and attachment', hint: 'You don\'t just understand it academically. You lived it.' },
+      { id: 'motivation', text: 'Clear, honest motivation', hint: 'Not to rescue. Not to replay. To provide what you know a child needs.' },
+      { id: 'resilience', text: 'Capacity to handle setbacks', hint: 'Every day you\'ve shown up after a bad night is evidence of this.' },
+    ];
+
+    function renderChecklist() {
+      var el = document.getElementById('checklistEl');
+      el.innerHTML = CHECKLIST.map(function (item) {
+        var checked = nsData.checklist[item.id] ? ' checked' : '';
+        return '<div class="checklist-item' + checked + '" data-id="' + item.id + '">'
+          + '<div class="checklist-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>'
+          + '<div>'
+          +   '<div class="checklist-text">' + sEsc(item.text) + '</div>'
+          +   '<div class="checklist-hint">' + sEsc(item.hint) + '</div>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+
+      el.querySelectorAll('.checklist-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+          var id = item.dataset.id;
+          nsData.checklist[id] = !nsData.checklist[id];
+          sSave(S_KEYS.northStar, nsData);
+          item.classList.toggle('checked');
+        });
+      });
+    }
+    renderChecklist();
+
+    // ── Reset PIN ────────────────────────────
+    document.getElementById('resetPin').addEventListener('click', function () {
+      if (!confirm('Reset your Studio PIN? You\'ll need to create a new one.')) return;
+      localStorage.removeItem(S_KEYS.studioPin);
+      sToast('PIN cleared.');
+    });
+  </script>
+</body>
+</html>

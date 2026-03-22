@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>mp &middot; anchors</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b0b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .anchor-header {
+      padding: 1.5rem 0 0.5rem;
+    }
+    .anchor-message {
+      font-size: 0.78rem;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-top: 0.4rem;
+      min-height: 1.5em;
+      transition: opacity 0.4s;
+    }
+    .anchor-progress {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 1rem 0 1.25rem;
+    }
+    .anchor-bar-track {
+      flex: 1;
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .anchor-bar-fill {
+      height: 100%;
+      background: var(--amber);
+      border-radius: 2px;
+      transition: width 0.6s var(--ease-out);
+    }
+    .anchor-bar-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text3);
+      min-width: 32px;
+      text-align: right;
+    }
+
+    .anchor-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .toggle-icon {
+      font-size: 1.1rem;
+      width: 28px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .anchor-celebration {
+      text-align: center;
+      padding: 2rem 1rem;
+      animation: fadeUp 0.5s var(--ease-out) both;
+    }
+    .celebration-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .celebration-text {
+      font-size: 0.88rem;
+      color: var(--amber);
+      font-weight: 600;
+    }
+    .celebration-sub {
+      font-size: 0.72rem;
+      color: var(--text3);
+      margin-top: 0.3rem;
+    }
+
+    .add-anchor-btn {
+      width: 100%;
+      padding: 0.85rem;
+      border: 1px dashed var(--border-warm);
+      border-radius: var(--r);
+      background: none;
+      color: var(--text3);
+      font-family: inherit;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .add-anchor-btn:hover {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: var(--amber-dim);
+    }
+
+    .time-chips {
+      display: flex;
+      gap: 6px;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Safety Bar -->
+  <div class="safety-bar" id="safetyBar"></div>
+
+  <div class="page">
+    <div class="anchor-header fade-up">
+      <div class="page-title">Anchors</div>
+      <div class="anchor-message" id="anchorMsg">Your rituals. The ones you built yourself.</div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="anchor-progress fade-up" style="animation-delay:0.06s">
+      <div class="anchor-bar-track">
+        <div class="anchor-bar-fill" id="anchorFill" style="width:0%"></div>
+      </div>
+      <div class="anchor-bar-label" id="anchorCount">0/0</div>
+    </div>
+
+    <!-- Anchor list -->
+    <div class="anchor-list stagger" id="anchorList"></div>
+
+    <!-- Celebration -->
+    <div id="celebration" class="hidden"></div>
+
+    <!-- Add button -->
+    <button class="add-anchor-btn" id="addBtn">+ add an anchor</button>
+  </div>
+
+  <!-- Add/Edit Sheet -->
+  <div class="sheet-overlay" id="sheetOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-body">
+        <div class="sheet-title" id="sheetTitle">New anchor</div>
+        <div class="form-group">
+          <label class="form-label">What's the ritual?</label>
+          <input class="glass-input" id="anchorName" placeholder="Morning coffee, evening shower..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon (optional)</label>
+          <input class="glass-input" id="anchorIcon" placeholder="An emoji, or leave blank" maxlength="4" style="width:80px" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">When</label>
+          <div class="time-chips" id="timeChips">
+            <button class="chip" data-time="morning">Morning</button>
+            <button class="chip" data-time="afternoon">Afternoon</button>
+            <button class="chip" data-time="evening">Evening</button>
+            <button class="chip" data-time="anytime">Anytime</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:1.25rem;">
+          <button class="btn btn-amber btn-full" id="saveAnchor">Save</button>
+          <button class="btn btn-ghost" id="cancelAnchor">Cancel</button>
+        </div>
+        <button class="btn btn-ghost btn-full mt-2 hidden" id="deleteAnchor" style="color:var(--danger);border-color:rgba(212,123,123,0.2)">Remove this anchor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dock -->
+  <nav class="dock">
+    <a class="dock-item" href="index.html">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+      <span>Home</span>
+    </a>
+    <a class="dock-item" href="anchors.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/><path d="M5 12H2a10 10 0 0020 0h-3"/></svg>
+      <span>Anchors</span>
+    </a>
+    <a class="dock-item spiral-btn" href="spiral.html">
+      <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+    </a>
+    <a class="dock-item" href="magpie.html">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Magpie</span>
+    </a>
+    <a class="dock-item" href="pets.html">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none"/></svg>
+      <span>Pets</span>
+    </a>
+  </nav>
+
+  <script src="sanctuary.js"></script>
+  <script>
+    // ── Default anchors ──────────────────────
+    var DEFAULTS = [
+      { id: 'coffee',  name: 'Morning coffee',    icon: '', time: 'morning' },
+      { id: 'shower',  name: 'Evening shower',    icon: '', time: 'evening' },
+      { id: 'stretch', name: 'The stretch',       icon: '', time: 'anytime' },
+      { id: 'steak',   name: 'Steak Saturday',    icon: '', time: 'evening' },
+    ];
+
+    var anchors = sLoad(S_KEYS.anchors, null);
+    if (anchors === null) {
+      anchors = DEFAULTS;
+      sSave(S_KEYS.anchors, anchors);
+    }
+
+    var editingId = null;
+    var selectedTime = 'anytime';
+
+    var MESSAGES = {
+      none: 'Your rituals. The ones you built yourself.',
+      some: 'You showed up today. That counts.',
+      all:  'Every single one. You did the whole thing.',
+      missed: 'No pressure. They\'ll be here tomorrow.'
+    };
+
+    function getLog() {
+      return sLoad(S_KEYS.anchorsLog, {});
+    }
+    function saveLog(log) {
+      sSave(S_KEYS.anchorsLog, log);
+    }
+
+    function render() {
+      var log = getLog();
+      var today = sToday();
+      var todayLog = log[today] || [];
+      var total = anchors.length;
+      var done = 0;
+
+      var listEl = document.getElementById('anchorList');
+      if (!total) {
+        listEl.innerHTML = '<div class="empty"><div class="empty-text">No anchors yet. Add the rituals that ground you.</div></div>';
+        document.getElementById('anchorFill').style.width = '0%';
+        document.getElementById('anchorCount').textContent = '0/0';
+        document.getElementById('anchorMsg').textContent = MESSAGES.none;
+        document.getElementById('celebration').classList.add('hidden');
+        return;
+      }
+
+      // Sort: morning first, then afternoon, evening, anytime
+      var order = { morning: 0, afternoon: 1, evening: 2, anytime: 3 };
+      var sorted = anchors.slice().sort(function (a, b) {
+        return (order[a.time] || 3) - (order[b.time] || 3);
+      });
+
+      listEl.innerHTML = sorted.map(function (a) {
+        var isDone = todayLog.indexOf(a.id) !== -1;
+        if (isDone) done++;
+        var icon = a.icon || { morning: '\u2600\uFE0F', afternoon: '\uD83C\uDF24\uFE0F', evening: '\uD83C\uDF19', anytime: '\u2728' }[a.time] || '\u2728';
+        return '<button class="soft-toggle' + (isDone ? ' done' : '') + '" data-id="' + a.id + '">'
+          + '<span class="toggle-icon">' + icon + '</span>'
+          + '<div class="toggle-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>'
+          + '<div class="toggle-content">'
+          +   '<div class="toggle-name">' + sEsc(a.name) + '</div>'
+          +   '<div class="toggle-time">' + a.time + '</div>'
+          + '</div>'
+          + '</button>';
+      }).join('');
+
+      // Progress
+      var pct = total ? Math.round(done / total * 100) : 0;
+      document.getElementById('anchorFill').style.width = pct + '%';
+      document.getElementById('anchorCount').textContent = done + '/' + total;
+
+      // Message
+      var msgEl = document.getElementById('anchorMsg');
+      if (done === total && total > 0) {
+        msgEl.textContent = MESSAGES.all;
+        msgEl.style.color = 'var(--amber)';
+      } else if (done > 0) {
+        msgEl.textContent = MESSAGES.some;
+        msgEl.style.color = 'var(--text2)';
+      } else {
+        msgEl.textContent = MESSAGES.none;
+        msgEl.style.color = 'var(--text2)';
+      }
+
+      // Celebration
+      var celEl = document.getElementById('celebration');
+      if (done === total && total > 0) {
+        celEl.classList.remove('hidden');
+        celEl.innerHTML = '<div class="anchor-celebration">'
+          + '<div class="celebration-text">Every single anchor, held.</div>'
+          + '<div class="celebration-sub">You showed up for yourself today.</div>'
+          + '</div>';
+      } else {
+        celEl.classList.add('hidden');
+      }
+
+      // Toggle handlers
+      listEl.querySelectorAll('.soft-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = btn.dataset.id;
+          var log = getLog();
+          var today = sToday();
+          if (!log[today]) log[today] = [];
+          var idx = log[today].indexOf(id);
+          if (idx === -1) {
+            log[today].push(id);
+            sToast('Anchored.');
+          } else {
+            log[today].splice(idx, 1);
+          }
+          saveLog(log);
+          render();
+        });
+
+        // Long press to edit
+        var timer;
+        btn.addEventListener('mousedown', function () {
+          timer = setTimeout(function () { openEdit(btn.dataset.id); }, 600);
+        });
+        btn.addEventListener('mouseup', function () { clearTimeout(timer); });
+        btn.addEventListener('mouseleave', function () { clearTimeout(timer); });
+        btn.addEventListener('touchstart', function (e) {
+          timer = setTimeout(function () { e.preventDefault(); openEdit(btn.dataset.id); }, 600);
+        }, { passive: false });
+        btn.addEventListener('touchend', function () { clearTimeout(timer); });
+      });
+    }
+
+    // ── Sheet controls ───────────────────────
+    var overlay = document.getElementById('sheetOverlay');
+    var nameInput = document.getElementById('anchorName');
+    var iconInput = document.getElementById('anchorIcon');
+
+    function openSheet() {
+      overlay.classList.add('open');
+      setTimeout(function () { nameInput.focus(); }, 300);
+    }
+    function closeSheet() {
+      overlay.classList.remove('open');
+      editingId = null;
+      nameInput.value = '';
+      iconInput.value = '';
+      selectedTime = 'anytime';
+      updateTimeChips();
+      document.getElementById('sheetTitle').textContent = 'New anchor';
+      document.getElementById('deleteAnchor').classList.add('hidden');
+    }
+
+    function openEdit(id) {
+      var a = anchors.find(function (x) { return x.id === id; });
+      if (!a) return;
+      editingId = id;
+      nameInput.value = a.name;
+      iconInput.value = a.icon || '';
+      selectedTime = a.time || 'anytime';
+      updateTimeChips();
+      document.getElementById('sheetTitle').textContent = 'Edit anchor';
+      document.getElementById('deleteAnchor').classList.remove('hidden');
+      openSheet();
+    }
+
+    function updateTimeChips() {
+      document.querySelectorAll('#timeChips .chip').forEach(function (c) {
+        c.classList.toggle('active', c.dataset.time === selectedTime);
+      });
+    }
+
+    document.querySelectorAll('#timeChips .chip').forEach(function (c) {
+      c.addEventListener('click', function () {
+        selectedTime = c.dataset.time;
+        updateTimeChips();
+      });
+    });
+    updateTimeChips();
+
+    document.getElementById('addBtn').addEventListener('click', function () {
+      editingId = null;
+      document.getElementById('sheetTitle').textContent = 'New anchor';
+      document.getElementById('deleteAnchor').classList.add('hidden');
+      openSheet();
+    });
+
+    document.getElementById('saveAnchor').addEventListener('click', function () {
+      var name = nameInput.value.trim();
+      if (!name) return;
+      if (editingId) {
+        var a = anchors.find(function (x) { return x.id === editingId; });
+        if (a) {
+          a.name = name;
+          a.icon = iconInput.value.trim();
+          a.time = selectedTime;
+        }
+      } else {
+        anchors.push({
+          id: sId(),
+          name: name,
+          icon: iconInput.value.trim(),
+          time: selectedTime
+        });
+      }
+      sSave(S_KEYS.anchors, anchors);
+      closeSheet();
+      render();
+    });
+
+    document.getElementById('cancelAnchor').addEventListener('click', closeSheet);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeSheet();
+    });
+
+    document.getElementById('deleteAnchor').addEventListener('click', function () {
+      if (!editingId) return;
+      anchors = anchors.filter(function (a) { return a.id !== editingId; });
+      sSave(S_KEYS.anchors, anchors);
+      closeSheet();
+      render();
+      sToast('Anchor removed');
+    });
+
+    render();
+  </script>
+</body>
+</html>

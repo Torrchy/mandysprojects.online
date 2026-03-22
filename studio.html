@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>mp &middot; studio</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b0b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* No safety bar on studio — this is fully private */
+    body { padding-top: 0; }
+
+    .studio-unlocked {
+      display: none;
+    }
+    .studio-unlocked.visible {
+      display: block;
+    }
+
+    .studio-header {
+      padding: 1.5rem 0 0.5rem;
+    }
+    .back-link {
+      font-size: 0.72rem;
+      color: var(--text3);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 0.5rem;
+    }
+    .back-link:hover { color: var(--sage); }
+
+    .write-area {
+      width: 100%;
+      min-height: 300px;
+      padding: 1.15rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      line-height: 1.8;
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.3s;
+    }
+    .write-area:focus {
+      border-color: var(--border-active);
+    }
+    .write-area::placeholder { color: var(--text4); }
+
+    .write-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.75rem;
+    }
+    .word-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--text4);
+    }
+
+    .entry-list {
+      margin-top: 1.5rem;
+    }
+    .entry-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1rem;
+      margin-bottom: 0.6rem;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+    .entry-card:hover { border-color: var(--border-warm); }
+    .entry-card-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--text3);
+      margin-bottom: 0.35rem;
+    }
+    .entry-card-preview {
+      font-size: 0.78rem;
+      color: var(--text2);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .entry-card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .entry-full {
+      display: none;
+    }
+    .entry-full.visible { display: block; }
+
+    .entry-full-text {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .studio-safe-msg {
+      text-align: center;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.72rem;
+      color: var(--text3);
+      line-height: 1.55;
+    }
+
+    .lock-btn {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text3);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      transition: all 0.2s;
+    }
+    .lock-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    .pin-setup-info {
+      font-size: 0.72rem;
+      color: var(--text2);
+      text-align: center;
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <!-- PIN Screen -->
+  <div class="pin-screen" id="pinScreen">
+    <div class="pin-title" id="pinTitle">Enter your PIN</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    <div class="pin-pad" id="pinPad">
+      <button class="pin-key" data-key="1">1</button>
+      <button class="pin-key" data-key="2">2</button>
+      <button class="pin-key" data-key="3">3</button>
+      <button class="pin-key" data-key="4">4</button>
+      <button class="pin-key" data-key="5">5</button>
+      <button class="pin-key" data-key="6">6</button>
+      <button class="pin-key" data-key="7">7</button>
+      <button class="pin-key" data-key="8">8</button>
+      <button class="pin-key" data-key="9">9</button>
+      <button class="pin-key empty"></button>
+      <button class="pin-key" data-key="0">0</button>
+      <button class="pin-key backspace" data-key="back">&larr;</button>
+    </div>
+    <div class="pin-hint" id="pinHint">This space is yours. No one else sees it.</div>
+  </div>
+
+  <!-- Unlocked Studio -->
+  <div class="studio-unlocked" id="studioMain">
+    <button class="lock-btn" id="lockBtn" title="Lock studio">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </button>
+
+    <div class="page">
+      <a href="index.html" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
+        Home
+      </a>
+
+      <div class="studio-header">
+        <div class="page-title">Inner Child Studio</div>
+        <div class="page-subtitle">Your private creative space</div>
+      </div>
+
+      <div class="studio-safe-msg">
+        No one sees this. No AI judges it. It's not pathetic.<br>
+        It's the realest thing you do.
+      </div>
+
+      <!-- Write view -->
+      <div id="writeView">
+        <div class="form-group">
+          <label class="form-label">Title (optional)</label>
+          <input class="glass-input" id="entryTitle" placeholder="Give it a name, or don't" />
+        </div>
+        <textarea class="write-area" id="entryText" placeholder="Write whatever you need to write..."></textarea>
+        <div class="write-footer">
+          <span class="word-count" id="wordCount">0 words</span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-sm" id="clearBtn">Clear</button>
+            <button class="btn btn-amber btn-sm" id="saveBtn">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Entries -->
+      <div class="section-head mt-3">
+        <span class="label">Your writings</span>
+        <span class="label" id="entryCountLabel"></span>
+      </div>
+      <div class="entry-list" id="entryList"></div>
+
+      <!-- Full entry view -->
+      <div class="entry-full" id="entryFull">
+        <button class="btn btn-ghost btn-sm mb-2" id="backToList">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
+          Back
+        </button>
+        <div id="entryFullDate" class="entry-card-date"></div>
+        <div id="entryFullTitle" class="entry-card-title" style="font-size:1.1rem;margin-bottom:0.75rem;"></div>
+        <div id="entryFullText" class="entry-full-text"></div>
+        <div style="margin-top:1.5rem;display:flex;gap:8px;">
+          <button class="btn btn-ghost btn-sm" id="editEntry">Edit</button>
+          <button class="btn btn-ghost btn-sm" id="deleteEntry" style="color:var(--danger);">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="sanctuary.js"></script>
+  <script>
+    // ── PIN system ───────────────────────────
+    var pinScreen = document.getElementById('pinScreen');
+    var studioMain = document.getElementById('studioMain');
+    var pinDots = document.querySelectorAll('.pin-dot');
+    var pinKeys = document.querySelectorAll('.pin-key');
+    var pinHint = document.getElementById('pinHint');
+    var pinTitle = document.getElementById('pinTitle');
+
+    var storedPin = localStorage.getItem(S_KEYS.studioPin);
+    var isSetup = !storedPin;
+    var currentPin = '';
+    var confirmPin = '';
+    var setupPhase = isSetup ? 'create' : 'enter';
+
+    if (isSetup) {
+      pinTitle.textContent = 'Create a PIN';
+      pinHint.textContent = 'Choose 4 digits to lock your studio.';
+    }
+
+    function simpleHash(str) {
+      var hash = 0;
+      for (var i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return hash.toString(36);
+    }
+
+    function updateDots() {
+      pinDots.forEach(function (d, i) {
+        d.classList.toggle('filled', i < currentPin.length);
+        d.classList.remove('wrong');
+      });
+    }
+
+    function shakeDots() {
+      pinDots.forEach(function (d) { d.classList.add('wrong'); });
+      setTimeout(function () {
+        currentPin = '';
+        updateDots();
+      }, 500);
+    }
+
+    function unlock() {
+      pinScreen.style.display = 'none';
+      studioMain.classList.add('visible');
+      renderEntries();
+    }
+
+    function handlePin() {
+      if (currentPin.length !== 4) return;
+
+      if (setupPhase === 'create') {
+        confirmPin = currentPin;
+        currentPin = '';
+        setupPhase = 'confirm';
+        pinTitle.textContent = 'Confirm your PIN';
+        pinHint.textContent = 'Enter it again to confirm.';
+        updateDots();
+        return;
+      }
+
+      if (setupPhase === 'confirm') {
+        if (currentPin === confirmPin) {
+          localStorage.setItem(S_KEYS.studioPin, simpleHash(currentPin));
+          sToast('PIN set. Your space is locked.');
+          unlock();
+        } else {
+          pinHint.textContent = 'Didn\'t match. Try again.';
+          setupPhase = 'create';
+          pinTitle.textContent = 'Create a PIN';
+          shakeDots();
+        }
+        return;
+      }
+
+      // Normal entry
+      if (simpleHash(currentPin) === storedPin) {
+        unlock();
+      } else {
+        pinHint.textContent = 'Wrong PIN. Try again.';
+        shakeDots();
+      }
+    }
+
+    pinKeys.forEach(function (key) {
+      key.addEventListener('click', function () {
+        var val = key.dataset.key;
+        if (val === 'back') {
+          currentPin = currentPin.slice(0, -1);
+          updateDots();
+          return;
+        }
+        if (key.classList.contains('empty')) return;
+        if (currentPin.length >= 4) return;
+        currentPin += val;
+        updateDots();
+        if (currentPin.length === 4) {
+          setTimeout(handlePin, 200);
+        }
+      });
+    });
+
+    // Lock button
+    document.getElementById('lockBtn').addEventListener('click', function () {
+      studioMain.classList.remove('visible');
+      pinScreen.style.display = '';
+      currentPin = '';
+      setupPhase = 'enter';
+      pinTitle.textContent = 'Enter your PIN';
+      pinHint.textContent = 'This space is yours. No one else sees it.';
+      updateDots();
+    });
+
+    // ── Entry system ─────────────────────────
+    function getEntries() {
+      return sLoad(S_KEYS.studioEntries, []);
+    }
+    function saveEntries(entries) {
+      sSave(S_KEYS.studioEntries, entries);
+    }
+
+    var titleInput = document.getElementById('entryTitle');
+    var textInput = document.getElementById('entryText');
+    var wordCount = document.getElementById('wordCount');
+    var editingEntryId = null;
+
+    textInput.addEventListener('input', function () {
+      var words = textInput.value.trim().split(/\s+/).filter(Boolean).length;
+      wordCount.textContent = words + ' word' + (words !== 1 ? 's' : '');
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', function () {
+      var text = textInput.value.trim();
+      if (!text) return;
+
+      var entries = getEntries();
+      if (editingEntryId) {
+        var entry = entries.find(function (e) { return e.id === editingEntryId; });
+        if (entry) {
+          entry.title = titleInput.value.trim();
+          entry.text = text;
+          entry.updatedAt = new Date().toISOString();
+        }
+        editingEntryId = null;
+      } else {
+        entries.unshift({
+          id: sId(),
+          title: titleInput.value.trim(),
+          text: text,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+      saveEntries(entries);
+      titleInput.value = '';
+      textInput.value = '';
+      wordCount.textContent = '0 words';
+      sToast('Saved safely.');
+      renderEntries();
+      showWriteView();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      titleInput.value = '';
+      textInput.value = '';
+      wordCount.textContent = '0 words';
+      editingEntryId = null;
+    });
+
+    function renderEntries() {
+      var entries = getEntries();
+      var countLabel = document.getElementById('entryCountLabel');
+      countLabel.textContent = entries.length ? entries.length + ' entries' : '';
+
+      var listEl = document.getElementById('entryList');
+      if (!entries.length) {
+        listEl.innerHTML = '<div class="empty"><div class="empty-text">Nothing written yet. Take your time.</div></div>';
+        return;
+      }
+
+      listEl.innerHTML = entries.map(function (e) {
+        var preview = e.text.slice(0, 150).replace(/\n/g, ' ');
+        return '<div class="entry-card" data-id="' + e.id + '">'
+          + '<div class="entry-card-date">' + sFormatDate(e.createdAt) + '</div>'
+          + (e.title ? '<div class="entry-card-title">' + sEsc(e.title) + '</div>' : '')
+          + '<div class="entry-card-preview">' + sEsc(preview) + '</div>'
+          + '</div>';
+      }).join('');
+
+      listEl.querySelectorAll('.entry-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+          showEntryFull(card.dataset.id);
+        });
+      });
+    }
+
+    function showEntryFull(id) {
+      var entries = getEntries();
+      var entry = entries.find(function (e) { return e.id === id; });
+      if (!entry) return;
+
+      document.getElementById('writeView').style.display = 'none';
+      document.querySelector('.section-head.mt-3').style.display = 'none';
+      document.getElementById('entryList').style.display = 'none';
+      document.getElementById('entryFull').classList.add('visible');
+
+      document.getElementById('entryFullDate').textContent = sFormatDate(entry.createdAt);
+      document.getElementById('entryFullTitle').textContent = entry.title || '';
+      document.getElementById('entryFullText').textContent = entry.text;
+
+      document.getElementById('editEntry').onclick = function () {
+        editingEntryId = entry.id;
+        titleInput.value = entry.title || '';
+        textInput.value = entry.text;
+        textInput.dispatchEvent(new Event('input'));
+        showWriteView();
+      };
+
+      document.getElementById('deleteEntry').onclick = function () {
+        if (!confirm('Delete this entry? This can\'t be undone.')) return;
+        var entries = getEntries().filter(function (e) { return e.id !== id; });
+        saveEntries(entries);
+        showWriteView();
+        renderEntries();
+        sToast('Entry removed.');
+      };
+    }
+
+    function showWriteView() {
+      document.getElementById('writeView').style.display = '';
+      document.querySelector('.section-head.mt-3').style.display = '';
+      document.getElementById('entryList').style.display = '';
+      document.getElementById('entryFull').classList.remove('visible');
+    }
+
+    document.getElementById('backToList').addEventListener('click', showWriteView);
+  </script>
+</body>
+</html>

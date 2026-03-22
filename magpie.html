@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>mp &middot; magpie</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b0b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .magpie-header {
+      padding: 1.5rem 0 0.25rem;
+    }
+    .category-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 1rem 0 1.25rem;
+    }
+    .topic-wrap {
+      margin-bottom: 1.5rem;
+    }
+    .topic-card .topic-fun-fact {
+      font-size: 0.72rem;
+      color: var(--text3);
+      line-height: 1.55;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .topic-action {
+      margin-top: 1.25rem;
+    }
+    .search-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      color: var(--lavender);
+      text-decoration: none;
+      margin-top: 0.6rem;
+      font-weight: 500;
+    }
+    .search-link:hover { text-decoration: underline; }
+    .spark-history {
+      margin-top: 1rem;
+    }
+    .spark-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .spark-item:last-child { border-bottom: none; }
+    .spark-cat {
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--lavender);
+      min-width: 55px;
+    }
+    .spark-title-text {
+      font-size: 0.78rem;
+      color: var(--text);
+    }
+    .spark-date {
+      font-size: 0.58rem;
+      color: var(--text4);
+      margin-top: 0.1rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .shuffle-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text3);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s;
+    }
+    .shuffle-btn:hover {
+      border-color: var(--lavender);
+      color: var(--lavender);
+      background: var(--lavender-dim);
+    }
+  </style>
+</head>
+<body>
+  <div class="safety-bar" id="safetyBar"></div>
+
+  <div class="page">
+    <div class="magpie-header fade-up">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div class="page-title">Curiosity Magpie</div>
+          <div class="page-subtitle">Your brain on a little walk</div>
+        </div>
+        <button class="shuffle-btn" id="shuffleBtn" title="Pick a different topic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Category chips -->
+    <div class="category-row fade-up" style="animation-delay:0.06s" id="catRow"></div>
+
+    <!-- Today's topic -->
+    <div class="topic-wrap fade-up" style="animation-delay:0.12s" id="topicWrap"></div>
+
+    <!-- Spark history -->
+    <div class="section-head" id="historyHead" style="display:none">
+      <span class="label">Past sparks</span>
+    </div>
+    <div class="spark-history" id="sparkHistory"></div>
+  </div>
+
+  <!-- Dock -->
+  <nav class="dock">
+    <a class="dock-item" href="index.html">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+      <span>Home</span>
+    </a>
+    <a class="dock-item" href="anchors.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/><path d="M5 12H2a10 10 0 0020 0h-3"/></svg>
+      <span>Anchors</span>
+    </a>
+    <a class="dock-item spiral-btn" href="spiral.html">
+      <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+    </a>
+    <a class="dock-item" href="magpie.html">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Magpie</span>
+    </a>
+    <a class="dock-item" href="pets.html">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none"/></svg>
+      <span>Pets</span>
+    </a>
+  </nav>
+
+  <script src="sanctuary.js"></script>
+  <script>
+    // ── Topic database ───────────────────────
+    var TOPICS = {
+      history: [
+        { title: 'The Dancing Plague of 1518', desc: 'Hundreds of people in Strasbourg danced for days without rest, and nobody knows why. Some collapsed. Some died. The city hired musicians thinking it would help.', search: 'Dancing Plague 1518 Strasbourg' },
+        { title: 'The Antikythera Mechanism', desc: 'A 2,000-year-old analog computer found in a shipwreck. It predicted eclipses and tracked the Olympics. We didn\'t understand it for a century.', search: 'Antikythera Mechanism documentary' },
+        { title: 'Ching Shih, the Pirate Queen', desc: 'She commanded 1,800 ships and 80,000 pirates. The Chinese, Portuguese, and British navies all failed to defeat her. She retired rich and opened a gambling house.', search: 'Ching Shih pirate queen' },
+        { title: 'The Great Emu War of 1932', desc: 'Australia declared war on emus. The emus won. The military withdrew after the birds proved too fast and too clever for machine guns.', search: 'Great Emu War Australia' },
+        { title: 'The Year Without a Summer', desc: 'In 1816, a volcanic eruption made summer disappear across the Northern Hemisphere. Mary Shelley, stuck indoors, wrote Frankenstein.', search: '1816 year without summer volcano' },
+        { title: 'Sappho\'s Lost Poetry', desc: 'One of the greatest poets who ever lived, and we only have fragments. Her work was deliberately destroyed. What survives is still devastating.', search: 'Sappho fragments poetry' },
+      ],
+      science: [
+        { title: 'Tardigrades: Unkillable Micro-Bears', desc: 'They survive in the vacuum of space, radiation, boiling water, and freezing. They can shut down their metabolism for decades and come back. Goals, honestly.', search: 'tardigrade survival documentary' },
+        { title: 'Your Body Replaces Itself', desc: 'Almost every cell in your body is replaced over 7-10 years. The person reading this is literally not the same body that existed a decade ago. You rebuilt yourself.', search: 'human cell replacement cycle' },
+        { title: 'Octopus Intelligence', desc: 'They edit their own RNA. They have distributed brains in their arms. They escape from aquariums, use tools, and seem to dream.', search: 'octopus intelligence documentary' },
+        { title: 'The Overview Effect', desc: 'Astronauts who see Earth from space experience a cognitive shift — borders disappear, fragility becomes real. Many describe it as life-changing.', search: 'overview effect astronauts' },
+        { title: 'How Trees Talk', desc: 'Forests have underground networks of fungi that trees use to share nutrients and send distress signals. They care for their sick and feed their young.', search: 'mycorrhizal networks forest communication' },
+        { title: 'Bioluminescence', desc: 'The deep ocean is full of creatures that make their own light. Some use it to hunt, some to hide, some to find mates. The dark is alive with glow.', search: 'deep sea bioluminescence documentary' },
+      ],
+      medieval: [
+        { title: 'Medieval Cat Paintings', desc: 'Medieval artists were famously terrible at drawing cats. The results are horrifying, hilarious, and somehow very relatable. They look like they\'ve seen things.', search: 'medieval cat paintings ugly cats' },
+        { title: 'Trial of Animals', desc: 'Medieval courts put animals on trial — pigs for murder, weevils for crop destruction. The animals got lawyers. Some were acquitted.', search: 'medieval animal trials history' },
+        { title: 'The Codex Gigas (Devil\'s Bible)', desc: 'A massive manuscript supposedly written in one night by a monk who made a deal with the devil. It weighs 74 kg and contains a full-page portrait of Satan.', search: 'Codex Gigas devil bible' },
+        { title: 'Medieval Graffiti', desc: 'People in the Middle Ages carved graffiti into church walls — rude drawings, curses, prayers, and what appear to be medieval memes.', search: 'medieval church graffiti carvings' },
+        { title: 'Margery Kempe\'s Memoir', desc: 'The first autobiography in English, written by a medieval woman who cried constantly, argued with priests, and went on pilgrimages alone. An absolute force.', search: 'Margery Kempe autobiography medieval' },
+      ],
+      space: [
+        { title: 'The Pale Blue Dot', desc: 'Voyager 1 took a photo of Earth from 6 billion km away. A tiny pixel in a beam of light. Carl Sagan wrote about it. It will wreck you in the best way.', search: 'pale blue dot Carl Sagan' },
+        { title: 'Neutron Stars Are Insane', desc: 'A teaspoon of neutron star material weighs about 6 billion tonnes. They spin hundreds of times per second. They are the remnants of collapsed stars.', search: 'neutron star facts documentary' },
+        { title: 'The Wow! Signal', desc: 'In 1977, a radio telescope detected a 72-second signal from deep space that matched what we\'d expect from an alien transmission. It never repeated. We don\'t know what it was.', search: 'Wow signal 1977 SETI' },
+        { title: 'Rogue Planets', desc: 'There are planets drifting through space with no star, no orbit, just... wandering in the dark. Billions of them. Alone but free.', search: 'rogue planets free floating' },
+        { title: 'Time Dilation Is Real', desc: 'If you orbited a black hole and came back, centuries could have passed on Earth while you aged only hours. Time isn\'t fixed. It bends.', search: 'time dilation black hole explained' },
+      ],
+      nature: [
+        { title: 'Crows Hold Funerals', desc: 'When a crow dies, other crows gather around the body. They\'re studying the death — learning what killed it so they can avoid the same fate. They remember faces of threats for years.', search: 'crow funeral behavior intelligence' },
+        { title: 'The Immortal Jellyfish', desc: 'Turritopsis dohrnii can reverse its aging process and return to its juvenile state. It is biologically immortal. It just... starts over.', search: 'immortal jellyfish Turritopsis' },
+        { title: 'Whale Songs Change', desc: 'Humpback whales learn new songs from each other, and these songs spread across oceans like culture. They have trends. They have hits.', search: 'humpback whale song culture' },
+        { title: 'Mushrooms Saved the World', desc: 'After the asteroid killed the dinosaurs, fungi inherited the Earth. They broke down the dead and made new soil. Everything alive today exists because mushrooms went first.', search: 'fungi after dinosaur extinction' },
+      ],
+      art: [
+        { title: 'Hilma af Klint', desc: 'She painted abstract art before Kandinsky, before Mondrian, before anyone. She asked that her work not be shown until 20 years after her death. She knew the world wasn\'t ready.', search: 'Hilma af Klint abstract art' },
+        { title: 'Kintsugi', desc: 'The Japanese art of repairing broken pottery with gold. The cracks become part of the history. The break makes it more beautiful, not less.', search: 'kintsugi golden repair pottery' },
+        { title: 'Outsider Art', desc: 'Art made by self-taught artists outside the mainstream art world — prisoners, psychiatric patients, recluses. Raw, unfiltered, often more honest than anything in a gallery.', search: 'outsider art brut documentary' },
+        { title: 'The Unfinished Works', desc: 'Schubert\'s Unfinished Symphony. Kafka\'s novels. Gaudi\'s cathedral. Some of the most powerful art in history was never completed. The fragment can be the whole.', search: 'famous unfinished works art' },
+      ],
+      weird: [
+        { title: 'The Dyatlov Pass Incident', desc: 'Nine hikers died in the Ural Mountains in 1959. They cut their way out of their tent in the middle of the night, barefoot, in -30C. Some had crushed ribs. Still unexplained.', search: 'Dyatlov Pass incident documentary' },
+        { title: 'Numbers Stations', desc: 'Shortwave radio stations that broadcast nothing but coded number sequences, day and night, for decades. No government has claimed them. They\'re still broadcasting.', search: 'numbers stations shortwave radio' },
+        { title: 'The Hum', desc: 'A persistent low-frequency humming noise heard in certain locations worldwide. Only some people can hear it. No one has definitively explained it.', search: 'the Hum unexplained sound' },
+        { title: 'The Library of Babel', desc: 'Borges imagined a library containing every possible 410-page book. Most are gibberish. But somewhere in there is the book that explains your life perfectly.', search: 'Borges Library of Babel' },
+        { title: 'Ship of Theseus', desc: 'If you replace every plank of a ship, is it still the same ship? If every cell in your body is replaced, are you still you? (Yes. Obviously yes.)', search: 'Ship of Theseus thought experiment' },
+      ]
+    };
+
+    var CATEGORIES = Object.keys(TOPICS);
+    var CAT_LABELS = {
+      history: 'History', science: 'Science', medieval: 'Medieval', space: 'Space',
+      nature: 'Nature', art: 'Art', weird: 'Weird'
+    };
+
+    // ── State ────────────────────────────────
+    function getData() {
+      return sLoad(S_KEYS.magpie, { history: [], lastDate: null, watched: false, todayTopic: null, todayCat: null });
+    }
+    function saveData(d) {
+      sSave(S_KEYS.magpie, d);
+    }
+
+    // ── Pick topic ───────────────────────────
+    function pickTopic(cat) {
+      var pool = TOPICS[cat];
+      var data = getData();
+      // Avoid recently shown
+      var recent = (data.history || []).slice(-10).map(function (h) { return h.title; });
+      var available = pool.filter(function (t) { return recent.indexOf(t.title) === -1; });
+      if (!available.length) available = pool;
+      var idx = Math.floor(Math.random() * available.length);
+      return { cat: cat, topic: available[idx] };
+    }
+
+    // ── Render ────────────────────────────────
+    function render() {
+      var data = getData();
+      var today = sToday();
+
+      // Category chips
+      var catEl = document.getElementById('catRow');
+      catEl.innerHTML = CATEGORIES.map(function (c) {
+        var active = data.todayCat === c && data.lastDate === today ? ' active' : '';
+        return '<button class="chip' + active + '" data-cat="' + c + '">' + CAT_LABELS[c] + '</button>';
+      }).join('');
+      catEl.querySelectorAll('.chip').forEach(function (ch) {
+        ch.addEventListener('click', function () {
+          var data = getData();
+          if (data.lastDate === today && data.watched) return; // locked
+          var pick = pickTopic(ch.dataset.cat);
+          data.todayCat = pick.cat;
+          data.todayTopic = pick.topic;
+          data.lastDate = today;
+          data.watched = false;
+          saveData(data);
+          render();
+        });
+      });
+
+      // Topic area
+      var topicEl = document.getElementById('topicWrap');
+      var shuffleBtn = document.getElementById('shuffleBtn');
+
+      if (data.lastDate === today && data.watched) {
+        // LOCKED
+        topicEl.innerHTML = '<div class="magpie-locked">'
+          + '<div class="magpie-locked-icon">&#10024;</div>'
+          + '<div class="magpie-locked-text">You know something delightful now.</div>'
+          + '<div class="magpie-locked-sub">That\'s your spark for today. Let it sit.</div>'
+          + '</div>';
+        shuffleBtn.style.display = 'none';
+        // Show what was watched
+        if (data.todayTopic) {
+          topicEl.innerHTML += '<div class="card mt-2" style="text-align:center;">'
+            + '<div class="topic-category">' + sEsc(CAT_LABELS[data.todayCat] || '') + '</div>'
+            + '<div style="font-size:0.82rem;color:var(--text);font-weight:600;">' + sEsc(data.todayTopic.title) + '</div>'
+            + '<div style="font-size:0.62rem;color:var(--safe);margin-top:0.3rem;">Collected</div>'
+            + '</div>';
+        }
+      } else if (data.todayTopic && data.lastDate === today) {
+        // Topic selected, not yet watched
+        var t = data.todayTopic;
+        var searchUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(t.search + ' short');
+        topicEl.innerHTML = '<div class="topic-card">'
+          + '<div class="topic-category">' + sEsc(CAT_LABELS[data.todayCat] || '') + '</div>'
+          + '<div class="topic-title">' + sEsc(t.title) + '</div>'
+          + '<div class="topic-desc">' + sEsc(t.desc) + '</div>'
+          + '<a href="' + searchUrl + '" target="_blank" rel="noopener" class="search-link">Find a short video &rarr;</a>'
+          + '<div class="topic-action">'
+          +   '<button class="btn btn-amber btn-full" id="markWatched">I watched / read something</button>'
+          + '</div>'
+          + '<div class="topic-fun-fact">6 minutes or less. No notes. No quiz. Just your brain on a walk.</div>'
+          + '</div>';
+
+        document.getElementById('markWatched').addEventListener('click', function () {
+          var data = getData();
+          data.watched = true;
+          if (!data.history) data.history = [];
+          data.history.push({
+            title: data.todayTopic.title,
+            cat: data.todayCat,
+            date: today
+          });
+          // Keep last 50
+          if (data.history.length > 50) data.history = data.history.slice(-50);
+          saveData(data);
+          sToast('Spark collected.');
+          render();
+        });
+        shuffleBtn.style.display = '';
+      } else {
+        // No topic yet — pick random category
+        topicEl.innerHTML = '<div class="card text-center" style="padding:2rem 1rem;">'
+          + '<div style="font-size:1.8rem;opacity:0.4;margin-bottom:0.75rem;">&#10024;</div>'
+          + '<div style="font-size:0.88rem;color:var(--text);font-weight:600;margin-bottom:0.4rem;">Pick a category</div>'
+          + '<div style="font-size:0.72rem;color:var(--text3);line-height:1.5;">Tap a topic above and your brain gets a little walk. 6 minutes. No pressure.</div>'
+          + '</div>';
+        shuffleBtn.style.display = 'none';
+      }
+
+      // Shuffle button — pick new topic in same category
+      shuffleBtn.onclick = function () {
+        var data = getData();
+        if (data.watched || !data.todayCat) return;
+        var pick = pickTopic(data.todayCat);
+        data.todayTopic = pick.topic;
+        saveData(data);
+        render();
+      };
+
+      // History
+      var hist = (data.history || []).slice().reverse().slice(0, 15);
+      var histHead = document.getElementById('historyHead');
+      var histEl = document.getElementById('sparkHistory');
+      if (hist.length) {
+        histHead.style.display = '';
+        histEl.innerHTML = hist.map(function (h) {
+          return '<div class="spark-item">'
+            + '<div class="spark-cat">' + sEsc(CAT_LABELS[h.cat] || h.cat) + '</div>'
+            + '<div><div class="spark-title-text">' + sEsc(h.title) + '</div>'
+            + '<div class="spark-date">' + sEsc(h.date) + '</div></div>'
+            + '</div>';
+        }).join('');
+      } else {
+        histHead.style.display = 'none';
+        histEl.innerHTML = '';
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>

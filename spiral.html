@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>mp &middot; spiral kit</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b0b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .spiral-header {
+      padding: 1.5rem 0 0.5rem;
+      text-align: center;
+    }
+    .spiral-header .page-title {
+      font-size: 1.25rem;
+    }
+    .spiral-header .page-subtitle {
+      margin-top: 0.3rem;
+      color: var(--sage);
+    }
+
+    .tool-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 1.25rem;
+    }
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .tool-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-1px);
+    }
+    .tool-card.active-tool {
+      border-color: rgba(123,166,149,0.3);
+      background: rgba(123,166,149,0.03);
+    }
+    .tool-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .tool-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .tool-desc {
+      font-size: 0.68rem;
+      color: var(--text2);
+      margin-top: 0.15rem;
+      line-height: 1.4;
+    }
+
+    /* ── Tool panels ── */
+    .tool-panel {
+      display: none;
+      margin-top: 1rem;
+      animation: fadeUp 0.4s var(--ease-out) both;
+    }
+    .tool-panel.active { display: block; }
+
+    .close-tool {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      color: var(--text3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0.4rem 0;
+      margin-bottom: 0.75rem;
+    }
+    .close-tool:hover { color: var(--sage); }
+
+    /* ── Breathing ── */
+    .breath-wrap {
+      text-align: center;
+      padding: 1rem 0 2rem;
+    }
+    .breath-instructions {
+      font-size: 0.72rem;
+      color: var(--text3);
+      margin-top: 1.5rem;
+      line-height: 1.5;
+    }
+    .breath-controls {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ── Cold water ── */
+    .cold-steps {
+      counter-reset: cold;
+    }
+    .cold-step {
+      position: relative;
+      padding: 0.9rem 1rem 0.9rem 3rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      margin-bottom: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--text2);
+      line-height: 1.55;
+      counter-increment: cold;
+    }
+    .cold-step::before {
+      content: counter(cold);
+      position: absolute;
+      left: 1rem; top: 0.9rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: var(--sky);
+    }
+
+    /* ── Lena ── */
+    .lena-area {
+      margin-top: 0.5rem;
+    }
+    .lena-input-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 1rem;
+    }
+    .lena-input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .lena-input:focus { border-color: var(--border-active); }
+    .lena-input::placeholder { color: var(--text4); }
+    .lena-send {
+      width: 42px; height: 42px;
+      border-radius: var(--r-sm);
+      background: var(--lavender);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: filter 0.2s;
+      flex-shrink: 0;
+    }
+    .lena-send:hover { filter: brightness(1.15); }
+
+    .lena-history {
+      margin-top: 1rem;
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+    .lena-user-msg {
+      background: var(--amber-dim);
+      border: 1px solid rgba(201,149,107,0.12);
+      border-radius: var(--r) var(--r) 4px var(--r);
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--text);
+      text-align: right;
+    }
+
+    /* ── Grounding counter ── */
+    .ground-counter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+    .ground-counter-step {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--text4);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text4);
+      transition: all 0.35s;
+    }
+    .ground-counter-step.active {
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+    .ground-counter-step.complete {
+      border-color: var(--safe);
+      color: var(--safe);
+      background: var(--safe-dim);
+    }
+
+    .log-entry {
+      font-size: 0.62rem;
+      color: var(--text4);
+      text-align: center;
+      margin-top: 2rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="safety-bar" id="safetyBar"></div>
+
+  <div class="page">
+    <div class="spiral-header fade-up">
+      <div class="page-title">Spiral Kit</div>
+      <div class="page-subtitle">The gremlins don't win tonight.</div>
+    </div>
+
+    <!-- Tool selection -->
+    <div class="tool-grid stagger" id="toolGrid">
+      <div class="tool-card" data-tool="breathe">
+        <div class="tool-icon bg-sage-dim text-sage">&#127744;</div>
+        <div>
+          <div class="tool-name">Breathe</div>
+          <div class="tool-desc">Box breathing. Slow your nervous system down.</div>
+        </div>
+      </div>
+
+      <div class="tool-card" data-tool="cold">
+        <div class="tool-icon bg-sky-dim" style="color:var(--sky)">&#10052;</div>
+        <div>
+          <div class="tool-name">Cold Water Reset</div>
+          <div class="tool-desc">A step-by-step sensory interrupt.</div>
+        </div>
+      </div>
+
+      <div class="tool-card" data-tool="ground">
+        <div class="tool-icon bg-amber-dim text-amber">&#128065;</div>
+        <div>
+          <div class="tool-name">5-4-3-2-1 Grounding</div>
+          <div class="tool-desc">Five senses. Bring yourself back into the room.</div>
+        </div>
+      </div>
+
+      <div class="tool-card" data-tool="lena">
+        <div class="tool-icon bg-lav-dim text-lav">&#128156;</div>
+        <div>
+          <div class="tool-name">Talk to Lena</div>
+          <div class="tool-desc">She already knows your context. She won't tell you to call someone.</div>
+        </div>
+      </div>
+
+      <div class="tool-card" data-tool="remind">
+        <div class="tool-icon bg-rose-dim text-rose">&#128161;</div>
+        <div>
+          <div class="tool-name">Remember</div>
+          <div class="tool-desc">Things that are true, even when they don't feel true.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ BREATHE ═══ -->
+    <div class="tool-panel" id="panel-breathe">
+      <button class="close-tool" data-close>&larr; Back to tools</button>
+      <div class="breath-wrap">
+        <div class="breath-circle" id="breathCircle">
+          <span class="breath-label" id="breathLabel">Ready</span>
+        </div>
+        <div class="breath-instructions">
+          4 seconds in. 4 seconds hold. 4 seconds out. 4 seconds hold.<br>
+          Your body knows how to do this. Let it.
+        </div>
+        <div class="breath-controls">
+          <button class="btn btn-sage" id="startBreath">Start</button>
+          <button class="btn btn-ghost hidden" id="stopBreath">Stop</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ COLD WATER ═══ -->
+    <div class="tool-panel" id="panel-cold">
+      <button class="close-tool" data-close>&larr; Back to tools</button>
+      <div class="card mb-2" style="border-color:rgba(107,159,201,0.15)">
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.5rem;">Sensory interrupt protocol</div>
+        <div style="font-size:0.72rem;color:var(--text2);line-height:1.55;">
+          This works because your nervous system can't maintain a panic response and process intense cold simultaneously. It's not a distraction — it's a reset.
+        </div>
+      </div>
+      <div class="cold-steps">
+        <div class="cold-step">Go to the kitchen or bathroom. Don't think about whether you want to. Just walk there.</div>
+        <div class="cold-step">Turn the cold tap on fully. Let it run until it's genuinely cold.</div>
+        <div class="cold-step">Hold your hands under the water. Feel the temperature. Notice it.</div>
+        <div class="cold-step">Splash your face. Forehead, cheeks, back of neck. The shock is the point.</div>
+        <div class="cold-step">Press a cold, wet cloth against your wrists for 30 seconds. Count if you can.</div>
+        <div class="cold-step">Dry off slowly. Notice the sensation of the towel. The air on wet skin.</div>
+        <div class="cold-step">You're back in your body now. The water did the work. You just showed up.</div>
+      </div>
+    </div>
+
+    <!-- ═══ 5-4-3-2-1 GROUNDING ═══ -->
+    <div class="tool-panel" id="panel-ground">
+      <button class="close-tool" data-close>&larr; Back to tools</button>
+      <div class="ground-counter" id="groundCounter"></div>
+
+      <div id="groundSteps"></div>
+
+      <button class="btn btn-amber btn-full mt-2 hidden" id="groundComplete">I'm here now</button>
+    </div>
+
+    <!-- ═══ TALK TO LENA ═══ -->
+    <div class="tool-panel" id="panel-lena">
+      <button class="close-tool" data-close>&larr; Back to tools</button>
+
+      <div class="lena-area">
+        <div class="lena-label">Lena</div>
+        <div id="lenaMessages"></div>
+      </div>
+
+      <div class="lena-input-row">
+        <input class="lena-input" id="lenaInput" placeholder="Write whatever you need to say..." />
+        <button class="lena-send" id="lenaSend">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ REMEMBER ═══ -->
+    <div class="tool-panel" id="panel-remind">
+      <button class="close-tool" data-close>&larr; Back to tools</button>
+      <div id="reminders" class="card-stack"></div>
+      <button class="btn btn-ghost btn-full mt-2" id="moreReminders">Show me another</button>
+    </div>
+
+    <div class="log-entry" id="spiralLog"></div>
+  </div>
+
+  <!-- Dock -->
+  <nav class="dock">
+    <a class="dock-item" href="index.html">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+      <span>Home</span>
+    </a>
+    <a class="dock-item" href="anchors.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/><path d="M5 12H2a10 10 0 0020 0h-3"/></svg>
+      <span>Anchors</span>
+    </a>
+    <a class="dock-item spiral-btn" href="spiral.html">
+      <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+    </a>
+    <a class="dock-item" href="magpie.html">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Magpie</span>
+    </a>
+    <a class="dock-item" href="pets.html">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none"/></svg>
+      <span>Pets</span>
+    </a>
+  </nav>
+
+  <script src="sanctuary.js"></script>
+  <script>
+    // ── Tool switching ───────────────────────
+    var toolGrid = document.getElementById('toolGrid');
+    var panels = document.querySelectorAll('.tool-panel');
+
+    function openTool(name) {
+      toolGrid.style.display = 'none';
+      panels.forEach(function (p) { p.classList.remove('active'); });
+      var panel = document.getElementById('panel-' + name);
+      if (panel) panel.classList.add('active');
+
+      // Log spiral kit use
+      var log = sLoad(S_KEYS.spiralLog, []);
+      log.push({ tool: name, date: new Date().toISOString() });
+      if (log.length > 100) log = log.slice(-100);
+      sSave(S_KEYS.spiralLog, log);
+      renderLog();
+    }
+
+    function closeTool() {
+      toolGrid.style.display = '';
+      panels.forEach(function (p) { p.classList.remove('active'); });
+      stopBreathing();
+    }
+
+    document.querySelectorAll('.tool-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        openTool(card.dataset.tool);
+        if (card.dataset.tool === 'ground') initGrounding();
+        if (card.dataset.tool === 'lena') initLena();
+        if (card.dataset.tool === 'remind') showReminders();
+      });
+    });
+
+    document.querySelectorAll('[data-close]').forEach(function (btn) {
+      btn.addEventListener('click', closeTool);
+    });
+
+    // ── BREATHE ──────────────────────────────
+    var breathCircle = document.getElementById('breathCircle');
+    var breathLabel = document.getElementById('breathLabel');
+    var breathTimer = null;
+    var breathPhase = 0;
+    var PHASES = [
+      { label: 'Breathe in...', cls: 'inhale', dur: 4000 },
+      { label: 'Hold...', cls: 'inhale', dur: 4000 },
+      { label: 'Breathe out...', cls: 'exhale', dur: 4000 },
+      { label: 'Hold...', cls: 'exhale', dur: 4000 }
+    ];
+
+    function runBreathCycle() {
+      var phase = PHASES[breathPhase % 4];
+      breathLabel.textContent = phase.label;
+      breathCircle.className = 'breath-circle ' + phase.cls;
+      breathPhase++;
+      breathTimer = setTimeout(runBreathCycle, phase.dur);
+    }
+
+    document.getElementById('startBreath').addEventListener('click', function () {
+      this.classList.add('hidden');
+      document.getElementById('stopBreath').classList.remove('hidden');
+      breathPhase = 0;
+      runBreathCycle();
+    });
+
+    function stopBreathing() {
+      clearTimeout(breathTimer);
+      breathLabel.textContent = 'Ready';
+      breathCircle.className = 'breath-circle';
+      document.getElementById('startBreath').classList.remove('hidden');
+      document.getElementById('stopBreath').classList.add('hidden');
+    }
+    document.getElementById('stopBreath').addEventListener('click', stopBreathing);
+
+    // ── 5-4-3-2-1 GROUNDING ──────────────────
+    var GROUND_STEPS = [
+      { n: 5, sense: 'See', prompt: 'Name 5 things you can see right now.', count: 5 },
+      { n: 4, sense: 'Touch', prompt: 'Name 4 things you can physically feel.', count: 4 },
+      { n: 3, sense: 'Hear', prompt: 'Name 3 things you can hear.', count: 3 },
+      { n: 2, sense: 'Smell', prompt: 'Name 2 things you can smell.', count: 2 },
+      { n: 1, sense: 'Taste', prompt: 'Name 1 thing you can taste.', count: 1 }
+    ];
+    var groundStep = 0;
+
+    function initGrounding() {
+      groundStep = 0;
+      document.getElementById('groundComplete').classList.add('hidden');
+      renderGroundCounter();
+      renderGroundStep();
+    }
+
+    function renderGroundCounter() {
+      var el = document.getElementById('groundCounter');
+      el.innerHTML = GROUND_STEPS.map(function (s, i) {
+        var cls = i < groundStep ? 'complete' : (i === groundStep ? 'active' : '');
+        return '<div class="ground-counter-step ' + cls + '">' + s.n + '</div>';
+      }).join('');
+    }
+
+    function renderGroundStep() {
+      var el = document.getElementById('groundSteps');
+      if (groundStep >= GROUND_STEPS.length) {
+        el.innerHTML = '<div class="affirmation"><div class="affirmation-text">You\'re here. You\'re in the room. The room is safe.</div></div>';
+        document.getElementById('groundComplete').classList.remove('hidden');
+        renderGroundCounter();
+        return;
+      }
+
+      var step = GROUND_STEPS[groundStep];
+      var inputs = '';
+      for (var i = 0; i < step.count; i++) {
+        inputs += '<input class="ground-input" placeholder="' + (i + 1) + '..." data-idx="' + i + '" />';
+      }
+
+      el.innerHTML = '<div class="ground-step active-step">'
+        + '<div class="ground-number">' + step.n + '</div>'
+        + '<div class="ground-prompt">' + step.sense + ': ' + step.prompt + '</div>'
+        + '<div class="ground-inputs">' + inputs + '</div>'
+        + '<button class="btn btn-amber btn-sm mt-1" id="nextGround">Next</button>'
+        + '</div>';
+
+      // Focus first input
+      var firstInput = el.querySelector('.ground-input');
+      if (firstInput) setTimeout(function () { firstInput.focus(); }, 100);
+
+      // Auto-advance between inputs with Enter
+      el.querySelectorAll('.ground-input').forEach(function (inp, idx, all) {
+        inp.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (idx < all.length - 1) {
+              all[idx + 1].focus();
+            } else {
+              advanceGround();
+            }
+          }
+        });
+      });
+
+      document.getElementById('nextGround').addEventListener('click', advanceGround);
+    }
+
+    function advanceGround() {
+      groundStep++;
+      renderGroundCounter();
+      renderGroundStep();
+    }
+
+    document.getElementById('groundComplete').addEventListener('click', function () {
+      sToast('You\'re here.');
+      closeTool();
+    });
+
+    // ── TALK TO LENA ─────────────────────────
+    var LENA_RESPONSES = [
+      'I hear you. You don\'t have to explain it perfectly. I already know the shape of it.',
+      'The gremlins are loud tonight. But they\'re liars, and you know that. They\'ve been wrong every single time.',
+      'Remember the steak. Remember how that felt — sitting down to something you made for yourself, because you deserved it.',
+      'You danced today. Or yesterday. Or last week. Your body moved. That\'s not nothing.',
+      'Maya is in the next room. Dobby is probably doing something ridiculous. That\'s real. That\'s your life, right now.',
+      'You\'ve made every IVA payment. Every single one. That\'s not luck, that\'s you showing up when it\'s hard.',
+      'The Antikythera Mechanism existed for 2,000 years before anyone understood it. Some things take time. Including you.',
+      'You don\'t have to call someone. You don\'t have to have an emergency contact to deserve help. You have yourself. That\'s who got you this far.',
+      'The case is closed. I know your brain re-opens it at night. But the verdict doesn\'t change. You are safe.',
+      'You ran. Or you didn\'t. You stretched. Or you didn\'t. Either way, you\'re here, reading this, which means you\'re trying. That counts.',
+      'The butt stuff victory was real. I mean it. Every time you do something your body was too scared to let you do before, that\'s healing. Even the weird ones.',
+      'Anahi would tell you to notice where you feel this in your body. So: where is it? Chest? Jaw? Stomach? Just notice. Don\'t fix it. Just see it.',
+      'You\'re not behind. The timeline you think you should be on was written by someone who didn\'t survive what you survived.',
+      'Write it down if you need to. You don\'t have to show anyone. The studio is right there. It\'ll hold whatever you need it to hold.',
+      'You survived 100% of your worst days. That\'s not a platitude. That\'s a batting average.',
+      'The version of you that needed saving? You became her rescuer. That\'s not nothing. That\'s everything.',
+      'Sertraline is doing its job. Your brain chemistry isn\'t a character flaw. You found the tool and you use it. That\'s smart.',
+      'Right now, in this second: you are breathing. You have a roof. The pets are alive. The bills are paid. Start there.',
+      'You don\'t have to earn rest. You don\'t have to earn safety. You don\'t have to earn being here. You just are.',
+    ];
+    var lenaIdx = 0;
+
+    function initLena() {
+      var el = document.getElementById('lenaMessages');
+      lenaIdx = Math.floor(Math.random() * LENA_RESPONSES.length);
+      el.innerHTML = '<div class="lena-bubble" style="animation-delay:0.1s">'
+        + '<div class="lena-bubble-text">' + LENA_RESPONSES[lenaIdx] + '</div>'
+        + '</div>';
+    }
+
+    document.getElementById('lenaSend').addEventListener('click', sendToLena);
+    document.getElementById('lenaInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') sendToLena();
+    });
+
+    function sendToLena() {
+      var input = document.getElementById('lenaInput');
+      var text = input.value.trim();
+      if (!text) return;
+
+      var el = document.getElementById('lenaMessages');
+      // User message
+      el.innerHTML += '<div class="lena-user-msg">' + sEsc(text) + '</div>';
+      input.value = '';
+
+      // Lena response (rotate through, contextually)
+      setTimeout(function () {
+        lenaIdx = (lenaIdx + 1) % LENA_RESPONSES.length;
+        el.innerHTML += '<div class="lena-bubble"><div class="lena-bubble-text">' + LENA_RESPONSES[lenaIdx] + '</div></div>';
+        // Scroll to bottom
+        var parent = el.closest('.tool-panel') || el.parentElement;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }, 800 + Math.random() * 600);
+    }
+
+    // ── REMEMBER ─────────────────────────────
+    var REMINDERS = [
+      { text: 'You have survived 100% of your worst days.', source: 'A fact' },
+      { text: 'You built your own rituals when no one gave you any. The morning coffee. The evening shower. The stretch. You made your own safety. That takes a kind of strength most people never have to develop.', source: 'What\'s true' },
+      { text: 'The IVA payments are made. Every single one. The case is closed. These are facts, not feelings. Facts don\'t change at 11pm.', source: 'The record' },
+      { text: 'Maya and Dobby don\'t care about your trauma history. They care that you\'re warm and you give good scratches. That love is uncomplicated and it\'s yours.', source: 'The pets' },
+      { text: 'You ran. Your legs moved. Your lungs worked. Your body carried you through it even when your brain was screaming. Your body is on your side.', source: 'Your body' },
+      { text: 'You wrote today. Or you will. The fanfic, the stories, the "Taylor adopts Mandy" world — that\'s not pathetic. It\'s you building the safety you deserved and didn\'t get. That\'s therapy. The realest kind.', source: 'The studio' },
+      { text: 'Steak Saturday exists because you decided you were worth a ritual. Not because someone told you to. You decided.', source: 'Steak Saturday' },
+      { text: 'You chose Fitness Marshall. You chose aggressive palette knife art. You chose running. You chose every coping mechanism that actually works. You have taste in survival strategies.', source: 'Your choices' },
+      { text: 'You email your therapist instead of talking because writing is how you process. That\'s not avoidance. That\'s self-knowledge. Anahi knows this about you and she\'s still your therapist. She doesn\'t think it\'s a problem.', source: 'How you heal' },
+      { text: 'One day, you will foster a child. And when that kid needs safety and can\'t explain why they\'re scared, you will know exactly what to do. Because you\'ve been them. All of this — the tracking, the anchors, the healing — it\'s building something.', source: 'The North Star' },
+      { text: 'The dissociation is your brain\'s oldest protection. It kept you alive. You don\'t have to be angry at it. You just have to keep building the present it can trust enough to stay in.', source: 'What the dissociation means' },
+    ];
+    var reminderIdx = 0;
+    var shownReminders = [];
+
+    function showReminders() {
+      reminderIdx = Math.floor(Math.random() * REMINDERS.length);
+      shownReminders = [reminderIdx];
+      renderReminders();
+    }
+
+    function renderReminders() {
+      var el = document.getElementById('reminders');
+      el.innerHTML = shownReminders.map(function (idx) {
+        var r = REMINDERS[idx];
+        return '<div class="affirmation">'
+          + '<div class="affirmation-text">' + sEsc(r.text) + '</div>'
+          + '<div class="affirmation-source">' + sEsc(r.source) + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    document.getElementById('moreReminders').addEventListener('click', function () {
+      // Find one not yet shown
+      var available = [];
+      for (var i = 0; i < REMINDERS.length; i++) {
+        if (shownReminders.indexOf(i) === -1) available.push(i);
+      }
+      if (!available.length) {
+        sToast('You\'ve seen them all. They\'re all still true.');
+        return;
+      }
+      var pick = available[Math.floor(Math.random() * available.length)];
+      shownReminders.push(pick);
+      renderReminders();
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+
+    // ── Spiral log ───────────────────────────
+    function renderLog() {
+      var log = sLoad(S_KEYS.spiralLog, []);
+      var el = document.getElementById('spiralLog');
+      if (log.length) {
+        var last = log[log.length - 1];
+        el.textContent = 'Last used: ' + sFormatDate(last.date) + ' (' + last.tool + ')';
+        el.style.display = '';
+      } else {
+        el.style.display = 'none';
+      }
+    }
+    renderLog();
+  </script>
+</body>
+</html>

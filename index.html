@@ -5,460 +5,288 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>mp</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#08090d">
+  <meta name="theme-color" content="#0b0b14">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* ── Clock ── */
-    .clock-wrap {
-      padding: 2.5rem 0 1.5rem;
-      text-align: center;
+    .greeting-wrap {
+      padding: 2rem 0 1.5rem;
     }
-    .clock-time {
+    .greeting-time {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 4.5rem;
+      font-size: 3.2rem;
       font-weight: 700;
       letter-spacing: -0.04em;
       line-height: 1;
       color: var(--text);
-      background: linear-gradient(135deg, var(--text) 40%, var(--accent));
+      background: linear-gradient(135deg, var(--text) 40%, var(--amber));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .clock-date {
-      font-size: 0.78rem;
-      color: var(--text3);
-      margin-top: 0.5rem;
+    .greeting-text {
+      font-size: 0.88rem;
+      color: var(--text2);
+      margin-top: 0.6rem;
       font-weight: 500;
     }
-    .clock-greeting {
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-top: 0.75rem;
-      opacity: 0.7;
+    .greeting-date {
+      font-size: 0.68rem;
+      color: var(--text3);
+      margin-top: 0.35rem;
     }
 
-    /* ── Capture bar ── */
-    .capture-wrap {
-      margin-bottom: 2rem;
-    }
-    .capture-bar {
-      display: flex;
-      gap: 6px;
-    }
-    .capture-input {
-      flex: 1;
-      padding: 0.8rem 1rem;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 0.88rem;
-      outline: none;
-      transition: border-color 0.3s, box-shadow 0.3s;
-    }
-    .capture-input:focus {
-      border-color: var(--accent-mid);
-      box-shadow: 0 0 0 3px var(--accent-dim);
-    }
-    .capture-input::placeholder { color: var(--text4); }
-    .capture-send {
-      width: 44px; height: 44px;
-      border-radius: var(--r);
-      background: var(--accent);
-      border: none;
-      color: #fff;
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.15s, filter 0.15s;
-      flex-shrink: 0;
-    }
-    .capture-send:hover { filter: brightness(1.15); }
-    .capture-send:active { transform: scale(0.92); }
-    .capture-hint {
-      font-size: 0.6rem;
-      color: var(--text4);
-      margin-top: 0.5rem;
-      text-align: center;
-    }
-
-    /* ── Stats row ── */
-    .stats {
+    .home-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 2rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 1.25rem;
     }
-    .stat {
-      background: var(--bg2);
-      border: 1px solid var(--border);
+    .home-grid .card-interactive { min-height: 120px; }
+    .home-grid .card-full { grid-column: 1 / -1; min-height: auto; }
+
+    .card-icon-wrap {
+      width: 36px; height: 36px;
       border-radius: var(--r-sm);
-      padding: 0.85rem 0.7rem;
-      text-align: center;
-    }
-    .stat-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .stat-label {
-      font-size: 0.55rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text4);
-      margin-top: 0.25rem;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 0.65rem;
+      font-size: 1rem;
     }
 
-    /* ── Feed ── */
-    .feed-header {
+    .card-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 0.1rem;
+    }
+
+    .anchor-mini {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
+      gap: 4px;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
     }
-    .feed { display: flex; flex-direction: column; gap: 6px; }
-    .feed-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.7rem;
-      padding: 0.8rem 0.9rem;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      transition: all 0.2s var(--ease);
-    }
-    .feed-item:hover {
-      border-color: rgba(255,255,255,0.1);
-      transform: translateX(2px);
-    }
-    .feed-dot {
+    .anchor-mini-dot {
       width: 8px; height: 8px;
       border-radius: 50%;
-      margin-top: 5px;
-      flex-shrink: 0;
-      opacity: 0.8;
+      background: var(--text4);
     }
-    .feed-body { flex: 1; min-width: 0; }
-    .feed-text {
+    .anchor-mini-dot.done { background: var(--amber); }
+
+    .quote-section {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      text-align: center;
+    }
+    .quote-text {
       font-size: 0.82rem;
-      line-height: 1.5;
-      color: var(--text);
-      word-break: break-word;
+      color: var(--text2);
+      line-height: 1.65;
+      font-style: italic;
+      max-width: 340px;
+      margin: 0 auto;
     }
-    .feed-text a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-    .feed-text a:hover { text-decoration: underline; }
-    .feed-meta {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.58rem;
-      color: var(--text4);
-      margin-top: 0.3rem;
-    }
-    .feed-delete {
-      background: none; border: none;
-      color: var(--text4);
-      cursor: pointer;
-      font-size: 0.75rem;
-      padding: 2px 4px;
-      opacity: 0;
-      transition: opacity 0.15s, color 0.15s;
-      flex-shrink: 0;
-    }
-    .feed-item:hover .feed-delete { opacity: 1; }
-    .feed-delete:hover { color: var(--red); }
-
-    .feed-item.task .feed-text { cursor: pointer; }
-    .feed-item.task.done .feed-text {
-      text-decoration: line-through;
-      opacity: 0.4;
-    }
-
-    /* Flash animation for new items */
-    @keyframes itemIn {
-      from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .feed-item.new { animation: itemIn 0.35s var(--ease); }
   </style>
 </head>
 <body>
+  <!-- Safety Bar -->
+  <div class="safety-bar" id="safetyBar"></div>
+
   <div class="page">
-    <!-- Header -->
-    <div class="page-head">
-      <span class="page-title">mp</span>
+    <!-- Greeting -->
+    <div class="greeting-wrap fade-up">
+      <div class="greeting-time" id="clock">--:--</div>
+      <div class="greeting-text" id="greeting"></div>
+      <div class="greeting-date" id="dateStr"></div>
     </div>
 
-    <!-- Clock -->
-    <div class="clock-wrap fade-up">
-      <div class="clock-time" id="clock">--:--</div>
-      <div class="clock-date" id="clockDate"></div>
-      <div class="clock-greeting" id="clockGreeting"></div>
+    <!-- Module cards -->
+    <div class="section-head fade-up" style="animation-delay:0.06s">
+      <span class="label">Your sanctuary</span>
     </div>
 
-    <!-- Capture -->
-    <div class="capture-wrap fade-up" style="animation-delay:0.08s">
-      <div class="capture-bar">
-        <input class="capture-input" id="captureInput" type="text"
-               placeholder="capture a thought, task, link..."
-               autocomplete="off" />
-        <button class="capture-send" id="captureSend" title="Save">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-        </button>
-      </div>
-      <div class="capture-hint">press enter &middot; links auto-detect &middot; start with [] for tasks</div>
+    <div class="home-grid stagger">
+      <!-- Anchors -->
+      <a href="anchors.html" class="card card-interactive">
+        <div class="card-icon-wrap bg-amber-dim text-amber">&#9875;</div>
+        <div class="card-title">Anchors</div>
+        <div class="card-desc">Your rituals today</div>
+        <div class="anchor-mini" id="anchorDots"></div>
+      </a>
+
+      <!-- Magpie -->
+      <a href="magpie.html" class="card card-interactive">
+        <div class="card-icon-wrap bg-lav-dim text-lav">&#10024;</div>
+        <div class="card-title">Magpie</div>
+        <div class="card-desc" id="magpieStatus">Your daily spark</div>
+      </a>
+
+      <!-- Maya & Dobby -->
+      <a href="pets.html" class="card card-interactive">
+        <div class="card-icon-wrap bg-rose-dim text-rose">&#128062;</div>
+        <div class="card-title">Maya & Dobby</div>
+        <div class="card-desc" id="petsDesc">Their shrine</div>
+      </a>
+
+      <!-- Studio -->
+      <a href="studio.html" class="card card-interactive">
+        <div class="card-icon-wrap bg-sage-dim text-sage">&#9998;</div>
+        <div class="card-title">Studio</div>
+        <div class="card-desc">Your private space</div>
+      </a>
+
+      <!-- Spiral Kit (full width, special) -->
+      <a href="spiral.html" class="card card-interactive card-full" style="border-color: rgba(123,166,149,0.15); background: linear-gradient(135deg, var(--surface), rgba(123,166,149,0.03));">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div class="card-icon-wrap bg-sage-dim text-sage" style="width:40px;height:40px;">&#128737;</div>
+          <div>
+            <div class="card-title">Spiral Kit</div>
+            <div class="card-desc">Grounding tools for when the gremlins arrive</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- North Star -->
+      <a href="north-star.html" class="card card-interactive card-full" style="border-color: rgba(155,142,196,0.12);">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div class="card-icon-wrap bg-lav-dim text-lav" style="width:40px;height:40px;">&#11088;</div>
+          <div>
+            <div class="card-title">North Star</div>
+            <div class="card-desc">Where all of this is heading</div>
+          </div>
+        </div>
+      </a>
     </div>
 
-    <!-- Stats -->
-    <div class="stats stagger">
-      <div class="stat">
-        <div class="stat-value" id="statTotal">0</div>
-        <div class="stat-label">Captured</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="statStreak">0</div>
-        <div class="stat-label">Day streak</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="statToday">0</div>
-        <div class="stat-label">Today</div>
-      </div>
-    </div>
-
-    <!-- Recent feed -->
-    <div class="feed-header">
-      <span class="label">Recent</span>
-      <a href="stream.html" style="font-size:0.62rem; color:var(--text3); text-decoration:none; font-weight:600;">View all &rarr;</a>
-    </div>
-    <div class="feed stagger" id="feed"></div>
+    <!-- Daily quote / affirmation -->
+    <div class="quote-section fade-up" style="animation-delay:0.4s" id="dailyQuote"></div>
   </div>
 
   <!-- Dock -->
   <nav class="dock">
-    <a class="dock-item active" href="index.html">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2m-10-10h2m16 0h2m-3.3-6.7-1.4 1.4M6.7 17.3l-1.4 1.4m0-14.1 1.4 1.4m10.6 10.6 1.4 1.4"/></svg>
-      <span>Now</span>
+    <a class="dock-item" href="index.html">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+      <span>Home</span>
     </a>
-    <a class="dock-item" href="stream.html">
-      <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/></svg>
-      <span>Stream</span>
+    <a class="dock-item" href="anchors.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/><path d="M5 12H2a10 10 0 0020 0h-3"/></svg>
+      <span>Anchors</span>
     </a>
-    <a class="dock-item" href="loops.html">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>
-      <span>Loops</span>
+    <a class="dock-item spiral-btn" href="spiral.html">
+      <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
     </a>
-    <a class="dock-item" href="spectrum.html">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><circle cx="15" cy="15" r="2"/><circle cx="15" cy="9" r="1"/><circle cx="9" cy="15" r="1"/></svg>
-      <span>Spectrum</span>
+    <a class="dock-item" href="magpie.html">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Magpie</span>
+    </a>
+    <a class="dock-item" href="pets.html">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none"/></svg>
+      <span>Pets</span>
     </a>
   </nav>
 
+  <script src="sanctuary.js"></script>
   <script>
-    // ── Time accent (shifts with time of day)
-    function setTimeAccent() {
-      var h = new Date().getHours();
-      var hue;
-      if (h >= 6 && h < 12)       hue = 35;   // warm amber morning
-      else if (h >= 12 && h < 17)  hue = 175;  // teal afternoon
-      else if (h >= 17 && h < 21)  hue = 270;  // violet evening
-      else                         hue = 220;  // deep blue night
-      document.documentElement.style.setProperty('--accent-h', hue);
-    }
-    setTimeAccent();
-
-    // ── Clock
+    // ── Clock & Greeting ─────────────────────
     function updateClock() {
       var now = new Date();
-      var h = now.getHours().toString().padStart(2, '0');
-      var m = now.getMinutes().toString().padStart(2, '0');
-      document.getElementById('clock').textContent = h + ':' + m;
-    }
-    updateClock();
-    setInterval(updateClock, 10000);
-
-    (function() {
-      var now = new Date();
       var h = now.getHours();
-      var part = h < 6 ? 'late night' : h < 12 ? 'morning' : h < 17 ? 'afternoon' : h < 21 ? 'evening' : 'night';
-      document.getElementById('clockGreeting').textContent = 'Good ' + part;
-      document.getElementById('clockDate').textContent = now.toLocaleDateString('en-GB', {
+      var hh = h.toString().padStart(2, '0');
+      var mm = now.getMinutes().toString().padStart(2, '0');
+      document.getElementById('clock').textContent = hh + ':' + mm;
+
+      var part = h < 6 ? 'The world is quiet. So can you be.'
+        : h < 12 ? 'Good morning, Mandy.'
+        : h < 17 ? 'Good afternoon.'
+        : h < 21 ? 'Good evening.'
+        : 'You made it through another day.';
+      document.getElementById('greeting').textContent = part;
+
+      document.getElementById('dateStr').textContent = now.toLocaleDateString('en-GB', {
         weekday: 'long', day: 'numeric', month: 'long'
       });
-    })();
-
-    // ── Stream data (shared with stream.html)
-    var STREAM_KEY = 'mp_stream';
-
-    function getStream() {
-      try { return JSON.parse(localStorage.getItem(STREAM_KEY) || '[]'); }
-      catch(e) { return []; }
     }
-    function saveStream(items) {
-      localStorage.setItem(STREAM_KEY, JSON.stringify(items));
-    }
-    function genId() {
-      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-    }
+    updateClock();
+    setInterval(updateClock, 30000);
 
-    // ── Detect type
-    function detectType(text) {
-      var t = text.trim();
-      if (/^https?:\/\//i.test(t)) return 'link';
-      if (/^\[\s?\]/.test(t)) return 'task';
-      return 'thought';
-    }
-
-    // ── Type colors
-    function typeColor(type) {
-      switch(type) {
-        case 'link':    return 'var(--blue)';
-        case 'task':    return 'var(--amber)';
-        case 'thought': return 'var(--accent)';
-        default:        return 'var(--text3)';
-      }
-    }
-
-    // ── Capture
-    var input = document.getElementById('captureInput');
-    var sendBtn = document.getElementById('captureSend');
-
-    function capture() {
-      var raw = input.value.trim();
-      if (!raw) return;
-
-      var type = detectType(raw);
-      var content = raw;
-      if (type === 'task') content = raw.replace(/^\[\s?\]\s*/, '');
-
-      var item = {
-        id: genId(),
-        type: type,
-        content: content,
-        done: false,
-        ts: new Date().toISOString()
-      };
-
-      var stream = getStream();
-      stream.unshift(item);
-      saveStream(stream);
-      input.value = '';
-      renderFeed();
-      renderStats();
-    }
-
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') capture();
-    });
-    sendBtn.addEventListener('click', capture);
-
-    // ── Render feed (last 8 items)
-    function renderFeed() {
-      var items = getStream().slice(0, 8);
-      var el = document.getElementById('feed');
-
-      if (!items.length) {
-        el.innerHTML = '<div class="empty"><div class="empty-icon">~</div><div class="empty-text">Nothing captured yet. Type something above to start.</div></div>';
+    // ── Anchor dots ──────────────────────────
+    function renderAnchorDots() {
+      var anchors = sLoad(S_KEYS.anchors, []);
+      var log = sLoad(S_KEYS.anchorsLog, {});
+      var today = sToday();
+      var todayLog = log[today] || [];
+      var el = document.getElementById('anchorDots');
+      if (!anchors.length) {
+        el.innerHTML = '<span style="font-size:0.62rem;color:var(--text4)">No anchors yet</span>';
         return;
       }
-
-      el.innerHTML = items.map(function(item) {
-        var content = item.content;
-        if (item.type === 'link') {
-          content = '<a href="' + escHtml(item.content) + '" target="_blank" rel="noopener">' + escHtml(truncate(item.content, 60)) + '</a>';
-        } else {
-          content = escHtml(content);
-        }
-        var doneClass = (item.type === 'task' && item.done) ? ' done' : '';
-        return '<div class="feed-item ' + item.type + doneClass + '" data-id="' + item.id + '">'
-          + '<div class="feed-dot" style="background:' + typeColor(item.type) + '"></div>'
-          + '<div class="feed-body">'
-          +   '<div class="feed-text">' + content + '</div>'
-          +   '<div class="feed-meta">' + timeAgo(item.ts) + ' &middot; ' + item.type + '</div>'
-          + '</div>'
-          + '<button class="feed-delete" title="Delete">&times;</button>'
-          + '</div>';
+      el.innerHTML = anchors.map(function (a) {
+        var done = todayLog.indexOf(a.id) !== -1;
+        return '<div class="anchor-mini-dot' + (done ? ' done' : '') + '" title="' + sEsc(a.name) + '"></div>';
       }).join('');
-
-      // Delete handlers
-      el.querySelectorAll('.feed-delete').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          var id = btn.closest('.feed-item').dataset.id;
-          var stream = getStream().filter(function(i) { return i.id !== id; });
-          saveStream(stream);
-          renderFeed();
-          renderStats();
-        });
-      });
-
-      // Task toggle
-      el.querySelectorAll('.feed-item.task .feed-text').forEach(function(txt) {
-        txt.addEventListener('click', function() {
-          var id = txt.closest('.feed-item').dataset.id;
-          var stream = getStream();
-          var item = stream.find(function(i) { return i.id === id; });
-          if (item) { item.done = !item.done; saveStream(stream); renderFeed(); }
-        });
-      });
     }
+    renderAnchorDots();
 
-    // ── Stats
-    function renderStats() {
-      var stream = getStream();
-      var today = new Date().toISOString().slice(0, 10);
-      var todayCount = stream.filter(function(i) { return i.ts.slice(0, 10) === today; }).length;
-
-      // Streak: consecutive days with captures
-      var streak = 0;
-      var d = new Date();
-      while (true) {
-        var ds = d.toISOString().slice(0, 10);
-        var has = stream.some(function(i) { return i.ts.slice(0, 10) === ds; });
-        if (!has) break;
-        streak++;
-        d.setDate(d.getDate() - 1);
+    // ── Magpie status ────────────────────────
+    function renderMagpieStatus() {
+      var data = sLoad(S_KEYS.magpie, {});
+      var el = document.getElementById('magpieStatus');
+      if (data.lastDate === sToday() && data.watched) {
+        el.textContent = 'Spark collected today';
+        el.style.color = 'var(--safe)';
+      } else {
+        el.textContent = 'Your daily spark awaits';
       }
+    }
+    renderMagpieStatus();
 
-      document.getElementById('statTotal').textContent = stream.length;
-      document.getElementById('statStreak').textContent = streak;
-      document.getElementById('statToday').textContent = todayCount;
+    // ── Pets desc ────────────────────────────
+    function renderPetsDesc() {
+      var pets = sLoad(S_KEYS.pets, { entries: [] });
+      var el = document.getElementById('petsDesc');
+      var c = pets.entries ? pets.entries.length : 0;
+      el.textContent = c ? c + ' memories saved' : 'Their shrine';
     }
+    renderPetsDesc();
 
-    // ── Helpers
-    function escHtml(s) {
-      var d = document.createElement('div');
-      d.textContent = s;
-      return d.innerHTML;
-    }
-    function truncate(s, n) {
-      return s.length > n ? s.slice(0, n) + '...' : s;
-    }
-    function timeAgo(iso) {
-      var diff = (Date.now() - new Date(iso).getTime()) / 1000;
-      if (diff < 60) return 'just now';
-      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-      var days = Math.floor(diff / 86400);
-      if (days === 1) return 'yesterday';
-      if (days < 7) return days + 'd ago';
-      return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-    }
+    // ── Daily quote / affirmation ────────────
+    var QUOTES = [
+      'You have survived 100% of your worst days.',
+      'Showing up — even half-assed — counts.',
+      'You are not behind. You are not broken. You are building something.',
+      'The fact that you are trying at all is the bravest thing.',
+      'Rest is not giving up. Rest is how you keep going.',
+      'You don\'t have to earn safety. It\'s yours.',
+      'Some days the win is just being here. That\'s enough.',
+      'Healing isn\'t linear, and that\'s not a failure.',
+      'The version of you that needed saving? You became her rescuer.',
+      'You built your own rituals when no one gave you any. That takes strength.',
+      'Maya is in the next room. Dobby is probably doing something ridiculous.',
+      'Every IVA payment is a brick in the foundation you\'re building.',
+      'The Antikythera Mechanism existed for 2000 years before anyone understood it. Some things take time.',
+      'Your body got you through today. Thank it.',
+      'You are allowed to take up space. You are allowed to be here.'
+    ];
 
-    renderFeed();
-    renderStats();
+    function renderQuote() {
+      // Use the day of year as seed for consistency within a day
+      var now = new Date();
+      var start = new Date(now.getFullYear(), 0, 0);
+      var dayOfYear = Math.floor((now - start) / 86400000);
+      var q = QUOTES[dayOfYear % QUOTES.length];
+      document.getElementById('dailyQuote').innerHTML =
+        '<div class="quote-text">"' + q + '"</div>';
+    }
+    renderQuote();
   </script>
 </body>
 </html>

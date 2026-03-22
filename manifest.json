@@ -1,14 +1,14 @@
 {
-    "name": "mp",
+    "name": "mp sanctuary",
     "short_name": "mp",
-    "description": "personal operating system — capture, loop, feel",
+    "description": "a trauma-informed personal sanctuary",
     "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",
-    "background_color": "#08090d",
-    "theme_color": "#08090d",
+    "background_color": "#0b0b14",
+    "theme_color": "#0b0b14",
     "orientation": "any",
-    "categories": ["productivity", "lifestyle"],
+    "categories": ["lifestyle", "health"],
     "icons": [
         {
             "src": "icon-192.png",

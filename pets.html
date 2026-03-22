@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>mp &middot; maya & dobby</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b0b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .pets-header { padding: 1.5rem 0 0.25rem; }
+
+    .pet-tabs {
+      display: flex;
+      gap: 6px;
+      margin: 0.75rem 0 1.25rem;
+    }
+    .pet-tab {
+      flex: 1;
+      padding: 0.6rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text3);
+    }
+    .pet-tab:hover { border-color: var(--border-warm); color: var(--text2); }
+    .pet-tab.active {
+      border-color: var(--border-active);
+      color: var(--rose);
+      background: var(--rose-dim);
+    }
+
+    .pet-panel { display: none; }
+    .pet-panel.active { display: block; }
+
+    .mood-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 0.5rem;
+    }
+    .mood-chip {
+      padding: 0.3rem 0.7rem;
+      border-radius: var(--r-pill);
+      font-size: 0.65rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text3);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mood-chip:hover, .mood-chip.active {
+      border-color: rgba(196,139,159,0.3);
+      color: var(--rose);
+      background: var(--rose-dim);
+    }
+
+    .photo-upload-area {
+      border: 1px dashed var(--border-warm);
+      border-radius: var(--r);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      margin-bottom: 1rem;
+    }
+    .photo-upload-area:hover {
+      border-color: var(--amber);
+      background: var(--amber-dim);
+    }
+    .photo-upload-area input { display: none; }
+
+    .emergency-box {
+      background: linear-gradient(135deg, var(--surface), rgba(196,139,159,0.03));
+      border: 1px solid rgba(196,139,159,0.12);
+      border-radius: var(--r);
+      padding: 1rem 1.15rem;
+      margin-top: 1.5rem;
+    }
+    .emergency-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--rose);
+      margin-bottom: 0.35rem;
+    }
+    .emergency-text {
+      font-size: 0.72rem;
+      color: var(--text2);
+      line-height: 1.55;
+    }
+    .emergency-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="safety-bar" id="safetyBar"></div>
+
+  <div class="page">
+    <div class="pets-header fade-up">
+      <div class="page-title">Maya & Dobby</div>
+      <div class="page-subtitle">They deserve a shrine</div>
+    </div>
+
+    <!-- Tabs: Journal / Walks / Gallery -->
+    <div class="pet-tabs fade-up" style="animation-delay:0.06s">
+      <button class="pet-tab active" data-tab="journal">Journal</button>
+      <button class="pet-tab" data-tab="walks">Walks</button>
+      <button class="pet-tab" data-tab="gallery">Gallery</button>
+    </div>
+
+    <!-- JOURNAL PANEL -->
+    <div class="pet-panel active" id="panel-journal">
+      <!-- Add entry -->
+      <div class="card mb-2">
+        <div class="form-group">
+          <label class="form-label">Who's this about?</label>
+          <div style="display:flex;gap:6px;">
+            <button class="chip active" id="whoMaya" data-who="Maya">Maya</button>
+            <button class="chip" id="whoDobby" data-who="Dobby">Dobby</button>
+            <button class="chip" id="whoBoth" data-who="Both">Both</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">What's the mood?</label>
+          <div class="mood-options" id="moodOptions">
+            <button class="mood-chip" data-mood="happy">Happy</button>
+            <button class="mood-chip" data-mood="silly">Silly</button>
+            <button class="mood-chip" data-mood="sleepy">Sleepy</button>
+            <button class="mood-chip" data-mood="cuddly">Cuddly</button>
+            <button class="mood-chip" data-mood="chaotic">Chaotic</button>
+            <button class="mood-chip" data-mood="brave">Brave</button>
+            <button class="mood-chip" data-mood="clingy">Clingy</button>
+            <button class="mood-chip" data-mood="zoomies">Zoomies</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note</label>
+          <textarea class="glass-input" id="petNote" placeholder="What did they do? What did it mean?" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Add a photo (optional)</label>
+          <div class="photo-upload-area" id="photoArea">
+            <input type="file" accept="image/*" id="photoInput" />
+            <div style="font-size:0.78rem;color:var(--text3);">Tap to add a photo</div>
+            <div id="photoPreview" style="margin-top:0.5rem;"></div>
+          </div>
+        </div>
+        <button class="btn btn-rose btn-full" id="savePetEntry">Save memory</button>
+      </div>
+
+      <!-- Entries -->
+      <div id="petEntries"></div>
+    </div>
+
+    <!-- WALKS PANEL -->
+    <div class="pet-panel" id="panel-walks">
+      <div class="card mb-2">
+        <div class="form-group">
+          <label class="form-label">Who went?</label>
+          <div style="display:flex;gap:6px;">
+            <button class="chip walk-who-chip active" data-who="Maya">Maya</button>
+            <button class="chip walk-who-chip" data-who="Dobby">Dobby</button>
+            <button class="chip walk-who-chip" data-who="Both">Both</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes (optional)</label>
+          <input class="glass-input" id="walkNote" placeholder="Where'd you go? How was it?" />
+        </div>
+        <button class="btn btn-sage btn-full" id="saveWalk">Log walk</button>
+      </div>
+
+      <div class="section-head">
+        <span class="label">Walk log</span>
+        <span class="label" id="walkCount"></span>
+      </div>
+      <div id="walkList"></div>
+    </div>
+
+    <!-- GALLERY PANEL -->
+    <div class="pet-panel" id="panel-gallery">
+      <div id="galleryGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
+      <div id="galleryEmpty" class="empty" style="display:none">
+        <div class="empty-text">No photos yet. Add them from the Journal tab.</div>
+      </div>
+    </div>
+
+    <!-- Emergency contact suggestion -->
+    <div class="emergency-box fade-up" style="animation-delay:0.3s">
+      <div class="emergency-title">Emergency Contact</div>
+      <div class="emergency-text">
+        The emergency contact field in your phone settings? The app quietly suggests you list:
+      </div>
+      <div class="emergency-name">Maya</div>
+      <div class="emergency-text" style="margin-top:0.3rem;color:var(--text3);font-size:0.62rem;">
+        Legally useless. Emotionally correct.
+      </div>
+    </div>
+  </div>
+
+  <!-- Dock -->
+  <nav class="dock">
+    <a class="dock-item" href="index.html">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+      <span>Home</span>
+    </a>
+    <a class="dock-item" href="anchors.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/><path d="M5 12H2a10 10 0 0020 0h-3"/></svg>
+      <span>Anchors</span>
+    </a>
+    <a class="dock-item spiral-btn" href="spiral.html">
+      <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+    </a>
+    <a class="dock-item" href="magpie.html">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Magpie</span>
+    </a>
+    <a class="dock-item" href="pets.html">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none"/></svg>
+      <span>Pets</span>
+    </a>
+  </nav>
+
+  <script src="sanctuary.js"></script>
+  <script>
+    // ── Tab switching ────────────────────────
+    document.querySelectorAll('.pet-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.pet-tab').forEach(function (t) { t.classList.remove('active'); });
+        document.querySelectorAll('.pet-panel').forEach(function (p) { p.classList.remove('active'); });
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'gallery') renderGallery();
+      });
+    });
+
+    // ── Journal ──────────────────────────────
+    var selectedWho = 'Maya';
+    var selectedMoods = [];
+    var photoData = null;
+
+    // Who chips
+    document.querySelectorAll('#panel-journal .chip[data-who]').forEach(function (ch) {
+      ch.addEventListener('click', function () {
+        document.querySelectorAll('#panel-journal .chip[data-who]').forEach(function (c) { c.classList.remove('active'); });
+        ch.classList.add('active');
+        selectedWho = ch.dataset.who;
+      });
+    });
+
+    // Mood chips (multi-select)
+    document.querySelectorAll('.mood-chip').forEach(function (ch) {
+      ch.addEventListener('click', function () {
+        ch.classList.toggle('active');
+        var mood = ch.dataset.mood;
+        var idx = selectedMoods.indexOf(mood);
+        if (idx === -1) selectedMoods.push(mood);
+        else selectedMoods.splice(idx, 1);
+      });
+    });
+
+    // Photo upload
+    var photoInput = document.getElementById('photoInput');
+    var photoArea = document.getElementById('photoArea');
+    var photoPreview = document.getElementById('photoPreview');
+
+    photoArea.addEventListener('click', function () { photoInput.click(); });
+    photoInput.addEventListener('change', function () {
+      var file = photoInput.files[0];
+      if (!file) return;
+      // Resize to max 400px to save localStorage space
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var img = new Image();
+        img.onload = function () {
+          var max = 400;
+          var w = img.width, h = img.height;
+          if (w > max || h > max) {
+            var ratio = Math.min(max / w, max / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          var canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          photoData = canvas.toDataURL('image/jpeg', 0.7);
+          photoPreview.innerHTML = '<img src="' + photoData + '" style="max-width:100%;border-radius:8px;margin-top:0.5rem;" />';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Save entry
+    document.getElementById('savePetEntry').addEventListener('click', function () {
+      var note = document.getElementById('petNote').value.trim();
+      if (!note && !photoData) { sToast('Add a note or photo'); return; }
+
+      var pets = sLoad(S_KEYS.pets, { entries: [] });
+      pets.entries.unshift({
+        id: sId(),
+        who: selectedWho,
+        moods: selectedMoods.slice(),
+        note: note,
+        photo: photoData,
+        date: new Date().toISOString()
+      });
+      sSave(S_KEYS.pets, pets);
+
+      // Reset
+      document.getElementById('petNote').value = '';
+      selectedMoods = [];
+      photoData = null;
+      photoPreview.innerHTML = '';
+      photoInput.value = '';
+      document.querySelectorAll('.mood-chip').forEach(function (c) { c.classList.remove('active'); });
+
+      sToast('Memory saved.');
+      renderEntries();
+    });
+
+    function renderEntries() {
+      var pets = sLoad(S_KEYS.pets, { entries: [] });
+      var el = document.getElementById('petEntries');
+
+      if (!pets.entries.length) {
+        el.innerHTML = '<div class="empty"><div class="empty-text">No memories yet. Start writing about them.</div></div>';
+        return;
+      }
+
+      el.innerHTML = pets.entries.slice(0, 30).map(function (e) {
+        var moods = (e.moods || []).map(function (m) {
+          return '<span class="pet-tag">' + sEsc(m) + '</span>';
+        }).join('');
+        var photoHtml = e.photo ? '<img class="pet-photo" src="' + e.photo + '" alt="" />' : '';
+        return '<div class="pet-entry">'
+          + photoHtml
+          + '<div class="pet-entry-header">'
+          +   '<span class="pet-entry-name">' + sEsc(e.who) + '</span>'
+          +   '<span class="pet-entry-date">' + sFormatDate(e.date) + '</span>'
+          + '</div>'
+          + (e.note ? '<div class="pet-entry-note">' + sEsc(e.note) + '</div>' : '')
+          + (moods ? '<div class="pet-entry-tags">' + moods + '</div>' : '')
+          + '<button class="btn btn-ghost btn-sm mt-1 pet-delete" data-id="' + e.id + '" style="font-size:0.6rem;padding:0.25rem 0.5rem;color:var(--text4);">Remove</button>'
+          + '</div>';
+      }).join('');
+
+      el.querySelectorAll('.pet-delete').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var pets = sLoad(S_KEYS.pets, { entries: [] });
+          pets.entries = pets.entries.filter(function (e) { return e.id !== btn.dataset.id; });
+          sSave(S_KEYS.pets, pets);
+          renderEntries();
+        });
+      });
+    }
+
+    // ── Walks ────────────────────────────────
+    var walkWho = 'Maya';
+    document.querySelectorAll('.walk-who-chip').forEach(function (ch) {
+      ch.addEventListener('click', function () {
+        document.querySelectorAll('.walk-who-chip').forEach(function (c) { c.classList.remove('active'); });
+        ch.classList.add('active');
+        walkWho = ch.dataset.who;
+      });
+    });
+
+    document.getElementById('saveWalk').addEventListener('click', function () {
+      var walks = sLoad(S_KEYS.walks, []);
+      walks.unshift({
+        id: sId(),
+        who: walkWho,
+        note: document.getElementById('walkNote').value.trim(),
+        date: new Date().toISOString()
+      });
+      sSave(S_KEYS.walks, walks);
+      document.getElementById('walkNote').value = '';
+      sToast('Walk logged.');
+      renderWalks();
+    });
+
+    function renderWalks() {
+      var walks = sLoad(S_KEYS.walks, []);
+      document.getElementById('walkCount').textContent = walks.length ? walks.length + ' walks' : '';
+      var el = document.getElementById('walkList');
+      if (!walks.length) {
+        el.innerHTML = '<div class="empty"><div class="empty-text">No walks logged yet.</div></div>';
+        return;
+      }
+      el.innerHTML = walks.slice(0, 40).map(function (w) {
+        return '<div class="walk-item">'
+          + '<div class="walk-icon">&#128062;</div>'
+          + '<div class="walk-info">'
+          +   '<div class="walk-who">' + sEsc(w.who) + (w.note ? ' &mdash; ' + sEsc(w.note) : '') + '</div>'
+          +   '<div class="walk-when">' + sFormatDate(w.date) + '</div>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    // ── Gallery ──────────────────────────────
+    function renderGallery() {
+      var pets = sLoad(S_KEYS.pets, { entries: [] });
+      var photos = pets.entries.filter(function (e) { return e.photo; });
+      var grid = document.getElementById('galleryGrid');
+      var empty = document.getElementById('galleryEmpty');
+      if (!photos.length) {
+        grid.style.display = 'none';
+        empty.style.display = '';
+        return;
+      }
+      grid.style.display = '';
+      empty.style.display = 'none';
+      grid.innerHTML = photos.map(function (e) {
+        return '<div style="border-radius:var(--r-sm);overflow:hidden;aspect-ratio:1;background:var(--surface);">'
+          + '<img src="' + e.photo + '" style="width:100%;height:100%;object-fit:cover;" alt="' + sEsc(e.who) + '" />'
+          + '</div>';
+      }).join('');
+    }
+
+    // ── Init ─────────────────────────────────
+    renderEntries();
+    renderWalks();
+  </script>
+</body>
+</html>
